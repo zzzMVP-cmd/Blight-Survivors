@@ -4335,6 +4335,131 @@ function drawBossBars(g){
   }
 }
 
+function drawWeaponIconShape(ctx, kind, cx, cy, sz){
+  ctx.save();
+  var hsz = sz * 0.35;
+  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = '#ffffff';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (kind === 'melee'){
+    ctx.beginPath();
+    ctx.moveTo(cx - hsz, cy - hsz); ctx.lineTo(cx + hsz*0.3, cy - hsz*0.1);
+    ctx.lineTo(cx + hsz*0.3, cy + hsz*0.1); ctx.lineTo(cx - hsz, cy + hsz);
+    ctx.lineTo(cx - hsz*0.3, cy + hsz*0.1); ctx.lineTo(cx - hsz*0.3, cy - hsz*0.1);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - hsz*0.2, cy - hsz*0.5); ctx.lineTo(cx, cy - hsz);
+    ctx.stroke();
+  }
+  else if (kind === 'arrow'){
+    ctx.beginPath();
+    ctx.moveTo(cx + hsz*0.9, cy);
+    ctx.lineTo(cx - hsz*0.5, cy - hsz*0.7);
+    ctx.lineTo(cx - hsz*0.1, cy);
+    ctx.lineTo(cx - hsz*0.5, cy + hsz*0.7);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(cx - hsz*0.8, cy); ctx.lineTo(cx - hsz*0.5, cy);
+    ctx.stroke();
+  }
+  else if (kind === 'magic'){
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.65, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - hsz*0.85); ctx.lineTo(cx, cy + hsz*0.85);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - hsz*0.85, cy); ctx.lineTo(cx + hsz*0.85, cy);
+    ctx.stroke();
+  }
+  else if (kind === 'flame'){
+    ctx.fillStyle = '#ff8a3d';
+    ctx.beginPath(); ctx.ellipse(cx - hsz*0.35, cy + hsz*0.15, hsz*0.2, hsz*0.6, -0.3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy, hsz*0.18, hsz*0.7, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + hsz*0.35, cy + hsz*0.15, hsz*0.2, hsz*0.6, 0.3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffd76e';
+    ctx.beginPath(); ctx.ellipse(cx, cy - hsz*0.05, hsz*0.12, hsz*0.4, 0, 0, Math.PI*2); ctx.fill();
+  }
+  else if (kind === 'boomerang'){
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy + hsz*0.1, hsz*0.75, Math.PI*0.45, Math.PI*0.85);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - hsz*0.3, cy - hsz*0.25);
+    ctx.lineTo(cx + hsz*0.5, cy + hsz*0.55);
+    ctx.moveTo(cx + hsz*0.5, cy + hsz*0.55);
+    ctx.lineTo(cx + hsz*0.35, cy + hsz*0.45);
+    ctx.stroke();
+  }
+  else if (kind === 'frost'){
+    ctx.save();
+    for (var fi=0; fi<3; fi++){
+      ctx.rotate(fi * Math.PI/3);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - hsz*0.8); ctx.lineTo(cx, cy + hsz*0.8);
+      ctx.stroke();
+    }
+    for (var fj=0; fj<3; fj++){
+      ctx.rotate(fj * Math.PI/3 + Math.PI/6);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - hsz*0.35); ctx.lineTo(cx + hsz*0.2, cy - hsz*0.55);
+      ctx.moveTo(cx, cy - hsz*0.35); ctx.lineTo(cx - hsz*0.2, cy - hsz*0.55);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  else if (kind === 'lightning'){
+    ctx.beginPath();
+    ctx.moveTo(cx + hsz*0.5, cy - hsz*0.8);
+    ctx.lineTo(cx - hsz*0.15, cy);
+    ctx.lineTo(cx + hsz*0.15, cy);
+    ctx.lineTo(cx - hsz*0.5, cy + hsz*0.8);
+    ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.moveTo(cx + hsz*0.5, cy - hsz*0.8);
+    ctx.lineTo(cx - hsz*0.15, cy);
+    ctx.lineTo(cx + hsz*0.15, cy);
+    ctx.lineTo(cx - hsz*0.5, cy + hsz*0.8);
+    ctx.stroke();
+  }
+  else if (kind === 'firewhirl'){
+    ctx.strokeStyle = '#ff8a3d';
+    ctx.lineWidth = 2.5;
+    var turns = 2.5, rMax = hsz*0.7, rMin = hsz*0.15;
+    ctx.beginPath();
+    for (var t=0; t<=turns; t+=0.05){
+      var frac = t/turns;
+      var r = rMax - (rMax-rMin)*frac;
+      var ang = t*Math.PI*2;
+      var px = cx + Math.cos(ang)*r;
+      var py = cy + Math.sin(ang)*r;
+      if (t===0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+  else if (kind === 'gravity'){
+    for (var g=3; g>=1; g--){
+      ctx.beginPath();
+      ctx.arc(cx, cy, hsz*0.25*g, 0, Math.PI*2);
+      ctx.globalAlpha = g/3;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.12, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 function drawWeaponBar(g){
   var p = g.player;
   var wids = p.getAllWeaponIds();
@@ -4364,12 +4489,10 @@ function drawWeaponBar(g){
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.roundRect(x, y, size, size, 8); ctx.fill(); ctx.stroke();
 
-    ctx.font = '22px "Segoe UI",sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(w.icon, x+size/2, y+size/2-4);
+    drawWeaponIconShape(ctx, w.kind, x+size/2, y+size/2-2, size);
 
     ctx.font = 'bold 9px "Segoe UI",sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffd76e';
     if (isHero) ctx.fillText('专属', x+size/2, y+size-8);
     else ctx.fillText('Lv.'+lv, x+size/2, y+size-8);
