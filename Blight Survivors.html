@@ -62,6 +62,7 @@
   .hero-card:hover { border-color:#ffb84d; transform:translateY(-3px); }
   .hero-card.locked { opacity:.45; cursor:not-allowed; }
   .hero-card.locked:hover { transform:none; border-color:#3a3a55; }
+  .hero-fragments { font-size:12px; color:#c878ff; margin-top:6px; font-weight:700; }
   .hero-icon { font-size:30px; margin-bottom:6px; }
   .hero-name { font-weight:700; font-size:15px; color:#ffd76e; margin-bottom:4px; }
   .hero-desc { font-size:11px; color:#9a9ab0; line-height:1.4; }
@@ -896,7 +897,9 @@ var SAVE_KEY = 'blight_survivors_save_v19';
 var save = {
   gold: 0,
   unlocked: ['warrior'],
-  items: { potion:0, haste:0, power:0, shield:0, magnet:0, freeze:0, fireball:0, lucky:0 }
+  items: { potion:0, haste:0, power:0, shield:0, magnet:0, freeze:0, fireball:0, lucky:0 },
+  fragments: { warrior:false, ranger:false, mage:false, rogue:false, warlock:false },
+  warlordUnlocked: false
 };
 try {
   var raw = localStorage.getItem(SAVE_KEY);
@@ -905,6 +908,8 @@ try {
     save.gold = loaded.gold || 0;
     save.unlocked = loaded.unlocked || ['warrior'];
     if (loaded.items) save.items = Object.assign(save.items, loaded.items);
+    if (loaded.fragments) save.fragments = Object.assign(save.fragments, loaded.fragments);
+    if (loaded.warlordUnlocked) save.warlordUnlocked = loaded.warlordUnlocked;
   }
 } catch(e){}
 function persist(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} }
@@ -1278,8 +1283,49 @@ var WEAPONS = {
         apply:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 2; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; },
         miniTranscend:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 4; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; } }
     ]
+  },
+  hero_melee_warlord: {
+    id:'hero_melee_warlord', category:'hero', wtype:'attack', name:'龙音枪·近', icon:'🔱',
+    kind:'melee', damage:50, atkSpeed:0.30, range:140, projSpeed:0,
+    knockback:35, desc:'武曲星近战：180°大扇形横扫',
+    noPower:true,
+    exclusiveName:'紫纹龙音',
+    exclusiveStages:[
+      { name:'龙音·鸣', desc:'追踪弹速度 +25%，近战扇形范围 +15%',
+        apply:function(p,rt){ rt._wlTrackSpd = (rt._wlTrackSpd||0) + 0.25; rt._wlSweepRange = (rt._wlSweepRange||0) + 0.15; applyToWarlordRanged(p, rt); },
+        miniTranscend:function(p,rt){ rt._wlTrackSpd = (rt._wlTrackSpd||0) + 0.10; rt._wlSweepRange = (rt._wlSweepRange||0) + 0.10; applyToWarlordRanged(p, rt); } },
+      { name:'龙音·贯', desc:'追踪弹时长 +2s，近战命中眩晕 0.5s',
+        apply:function(p,rt){ rt._wlTrackDur = (rt._wlTrackDur||0) + 2; rt._wlStun = 0.5; applyToWarlordRanged(p, rt); },
+        miniTranscend:function(p,rt){ rt._wlTrackDur = (rt._wlTrackDur||0) + 1; rt._wlStun = 0.8; applyToWarlordRanged(p, rt); } },
+      { name:'龙音·啸', desc:'追踪弹上限 +20，近战扇形扩至 220°',
+        apply:function(p,rt){ rt._wlTrackCount = (rt._wlTrackCount||0) + 20; rt._wlSweepWide = true; applyToWarlordRanged(p, rt); },
+        miniTranscend:function(p,rt){ rt._wlTrackCount = (rt._wlTrackCount||0) + 15; applyToWarlordRanged(p, rt); } },
+      { name:'龙音·吞噬', desc:'<50%HP概率吞噬(+1%)，最低伤+0.1%HP',
+        apply:function(p,rt){ rt._wlDevour = (rt._wlDevour||0) + 0.01; rt._wlMinDmg = (rt._wlMinDmg||0) + 0.001; applyToWarlordRanged(p, rt); },
+        miniTranscend:function(p,rt){ rt._wlDevour = 0.04; rt._wlMinDmg = 0.004; applyToWarlordRanged(p, rt); } }
+    ]
+  },
+  hero_arrow_warlord: {
+    id:'hero_arrow_warlord', category:'hero', wtype:'attack', name:'龙音枪·远', icon:'🎯',
+    kind:'missile', damage:40, atkSpeed:0.40, range:450, projSpeed:520,
+    knockback:20, desc:'武曲星远程：追踪龙音弹（8s/无限穿透/速度500+）',
+    noPower:true,
+    exclusiveName:'紫纹龙音',
+    exclusiveStages:[],
+    heroRef:'hero_melee_warlord'
   }
 };
+
+function applyToWarlordRanged(p, meleeRt){
+  var rMod = p.weaponMods['hero_arrow_warlord'];
+  if (!rMod || !rMod.runtime) return;
+  var rRt = rMod.runtime;
+  if (meleeRt._wlTrackSpd) rRt._wlTrackSpd = meleeRt._wlTrackSpd;
+  if (meleeRt._wlTrackDur) rRt._wlTrackDur = meleeRt._wlTrackDur;
+  if (meleeRt._wlTrackCount) rRt._wlTrackCount = meleeRt._wlTrackCount;
+  if (meleeRt._wlDevour !== undefined) rRt._wlDevour = meleeRt._wlDevour;
+  if (meleeRt._wlMinDmg !== undefined) rRt._wlMinDmg = meleeRt._wlMinDmg;
+}
 
 // ============================================================
 //  英雄
@@ -1294,7 +1340,10 @@ var HEROES = {
   rogue:{ name:'刺客', icon:'🗡️', cost:1200, desc:'极高攻速与暴击，生命极低',
     hp:65, speed:265, color:'#ff6b8a', projColor:'#ffb6c6', heroWeapon:'hero_melee_rogue' },
   warlock:{ name:'术士', icon:'🔥', cost:500, desc:'火焰术士，向最近目标喷射火焰',
-    hp:80, speed:220, color:'#ff8a3d', projColor:'#ffd76e', heroWeapon:'hero_melee_warlock' }
+    hp:80, speed:220, color:'#ff8a3d', projColor:'#ffd76e', heroWeapon:'hero_melee_warlock' },
+  warlord:{ name:'武曲星', icon:'🌟', cost:0, desc:'天神下凡！紫纹龙音枪·远近双持',
+    hp:180, speed:265, color:'#c878ff', projColor:'#e0c0ff', heroWeapon:'hero_melee_warlord',
+    damCap:0.10, autoWeapon:'hero_arrow_warlord', special:'warlord_dmg' }
 };
 
 // ============================================================
@@ -1507,6 +1556,19 @@ function Player(heroKey){
   this.gravityPowBuff = 0;
   this.gravitySpdBuff = 0;
   this.gravityBuffTimer = 0;
+
+  this.damCap = h.damCap || 0.5;
+  this.warlordDmgLevel = 0;
+  this.warlordDmgPerLevel = 14;
+  this.warlordDmgMax = 10;
+
+  if (h.autoWeapon && !this.universalWeapons[h.autoWeapon]){
+    this.universalWeapons[h.autoWeapon] = 1;
+    this.initWeaponMod(h.autoWeapon);
+    this.weaponTimers[h.autoWeapon] = 0;
+  }
+
+  this.fragmentCollected = '';
 }
 Player.prototype.rollCrit = function(extra){
   var chance = this.critChance + (extra || 0) + this.critPity * CRIT_PITY_STEP;
@@ -1630,6 +1692,9 @@ Player.prototype.getWeaponStats = function(wid){
   if (rt._shardDmgBonus) dmg += rt._shardDmgBonus;
   if (rt._novaDmgAdd) dmg += rt._novaDmgAdd;
   if (rt._boltDmgBonus) dmg += rt._boltDmgBonus;
+  if (this.warlordDmgLevel > 0 && (wid === 'hero_melee_warlord' || wid === 'hero_arrow_warlord')){
+    dmg += this.warlordDmgLevel * this.warlordDmgPerLevel;
+  }
 
   var atkInterval = baseAtkInterval / totalSpeedMult;
   if (w.speedCap == null && atkInterval < ATK_INTERVAL_FLOOR) atkInterval = ATK_INTERVAL_FLOOR;
@@ -2089,10 +2154,14 @@ function weaponAttack(g, wid){
   var preferUnCC = (w.wtype === 'control');
 
   if (w.kind === 'melee'){
+    var isWarlordMelee = (wid === 'hero_melee_warlord');
+    var sweepAngle = isWarlordMelee ? (rt._wlSweepWide ? Math.PI*1.22 : Math.PI) : 0.7;
+    var sweepRange = stats.range;
+    if (isWarlordMelee && rt._wlSweepRange) sweepRange *= (1 + rt._wlSweepRange);
     var shots = 1 + p.extraShots;
     var multiHit = rt._multiHit || 0;
     var totalShots = shots + multiHit;
-    var targets = selectTargets(g, w, totalShots, stats.range, false);
+    var targets = selectTargets(g, w, totalShots, sweepRange, false);
     if (targets.length === 0) return;
     SFX.slash();
 
@@ -2104,15 +2173,17 @@ function weaponAttack(g, wid){
       for (var j=0;j<g.enemies.length;j++){
         var e = g.enemies[j];
         if (e.dead) continue;
-        var rLim = stats.range + e.radius;
+        var rLim = sweepRange + e.radius;
         if (distSq(p.x, p.y, e.x, e.y) > rLim*rLim) continue;
         var ea = Math.atan2(e.y-p.y, e.x-p.x);
         var diff = Math.abs(ea - ang);
         if (diff > Math.PI) diff = Math.PI*2 - diff;
-        if (diff < 0.7){
+        var threshold = isWarlordMelee ? sweepAngle : 0.7;
+        if (diff < threshold){
           var crit = p.rollCrit(rt._critBonus||0);
           var dealt = crit ? stats.dmg*4 : stats.dmg;
           applyHit(g, e, dealt, stats.knockback, ang, crit);
+          if (isWarlordMelee && rt._wlStun > 0) e.stunTimer = Math.max(e.stunTimer, rt._wlStun);
           if (rt._bonusAoE){
             for (var k2=0;k2<g.enemies.length;k2++){
               var e2 = g.enemies[k2];
@@ -2398,6 +2469,25 @@ function weaponAttack(g, wid){
         life: rand(0.2,0.4), maxLife:0.4, color: col
       });
     }
+  } else if (w.kind === 'missile'){
+    var missileCount = 1 + p.extraShots + (rt._wlTrackCount || 0);
+    var missTargets = selectTargets(g, w, missileCount, stats.range, false);
+    if (missTargets.length === 0) return;
+    SFX.shoot();
+    var trackSpd = w.projSpeed * (1 + (rt._wlTrackSpd || 0));
+    var baseLife = 8 + (rt._wlTrackDur || 0);
+    for (var mi=0; mi<missileCount; mi++){
+      var tgtM = missTargets[mi % missTargets.length];
+      g.claimedTargets[tgtM.id] = true;
+      g.projectiles.push({
+        x: p.x, y: p.y,
+        vx: 0, vy: 0,
+        radius: 7, damage: stats.dmg, knockback: stats.knockback, pierce: 999,
+        hit: {}, hitList: [], hitListMax: 30,
+        life: baseLife, maxLife: baseLife, color: '#e0c0ff', kind:'missile', src: wid,
+        targetId: tgtM.id, speed: trackSpd, glowTrail: true
+      });
+    }
   }
 }
 
@@ -2411,10 +2501,31 @@ function applyHit(g, e, dmg, knockback, dirAngle, isCrit, src){
   } else {
     crit = isCrit;
   }
+
+  var dmgSrc = src || g._dmgSource || 'other';
+
+  var p = g.player;
+  var isWarlordWeapon = (dmgSrc === 'hero_melee_warlord' || dmgSrc === 'hero_arrow_warlord');
+  if (isWarlordWeapon){
+    var mod = p.weaponMods['hero_melee_warlord'];
+    var rt = mod && mod.runtime ? mod.runtime : {};
+    var devourRate = rt._wlDevour || 0;
+    var minDmgPct = rt._wlMinDmg || 0;
+    if (e.isBoss) minDmgPct *= 2;
+    var hpThreshold = e.maxHp || (e.hp + finalDmg);
+    var hpPct = e.hp / Math.max(1, hpThreshold);
+    if (hpPct < 0.5 && !e.isBoss && devourRate > 0 && Math.random() < devourRate){
+      finalDmg = e.hp + 99999;
+    }
+    if (minDmgPct > 0 && !(e.isBoss && devourRate > 0 && Math.random() < devourRate)){
+      var minDmg = hpThreshold * minDmgPct;
+      if (finalDmg < minDmg) finalDmg = minDmg;
+    }
+  }
+
   e.hp -= finalDmg;
   e.hitTimer = 0.08;
 
-  var dmgSrc = src || g._dmgSource || 'other';
   g.damageStats[dmgSrc] = (g.damageStats[dmgSrc] || 0) + finalDmg;
 
   if (knockback > 0){
@@ -2428,14 +2539,16 @@ function applyHit(g, e, dmg, knockback, dirAngle, isCrit, src){
   }
 
   if (g.damageTexts.length >= 200) g.damageTexts.splice(0, 50);
+  var displayText = finalDmg >= 99999 ? '吞噬!' : Math.round(finalDmg);
+  var displayColor = finalDmg >= 99999 ? '#c878ff' : (crit ? '#ff5a5a' : '#ffffff');
   g.damageTexts.push({
     x:e.x, y:e.y-e.radius-6, vy:-42,
     life:0.7, maxLife:0.7,
-    text: Math.round(finalDmg), crit:crit,
-    color: crit ? '#ff5a5a' : '#ffffff'
+    text: displayText, crit:crit,
+    color: displayColor
   });
 
-  if (crit) SFX.crit(); else SFX.hit();
+  if (finalDmg >= 99999) SFX.transcend(); else if (crit) SFX.crit(); else SFX.hit();
   if (e.hp <= 0) killEnemy(g, e, dirAngle);
 }
 
@@ -2445,6 +2558,17 @@ function killEnemy(g, e, dirAngle){
   g.kills++;
   g.goldEarned += 1;
   SFX.death();
+
+  var p = g.player;
+  var heroKey = p.heroKey;
+  if (heroKey !== 'warlord' && !save.fragments[heroKey]){
+    if (Math.random() < g.wave / 100000){
+      save.fragments[heroKey] = true;
+      p.fragmentCollected = heroKey;
+      persist();
+      setTimeout(function(){ p.fragmentCollected = ''; }, 3000);
+    }
+  }
 
   if (e.isBoss){
     for (var b=0;b<3;b++){
@@ -2550,7 +2674,7 @@ function tryOrbAbsorb(g, dmg){
 function damagePlayer(g, dmg){
   var p = g.player;
   if (p.invuln > 0 || p.dead) return;
-  var cappedDmg = Math.min(dmg, p.maxHp * 0.5);
+  var cappedDmg = Math.min(dmg, p.maxHp * p.damCap);
   if (p.orbAlive){ tryOrbAbsorb(g, cappedDmg); return; }
   var final = cappedDmg * p.armorMult;
   p.hp -= final;
@@ -2622,6 +2746,9 @@ function buildCandidatePool(g){
         }
       }
     }
+  }
+  if (p.heroKey === 'warlord' && p.warlordDmgLevel < p.warlordDmgMax){
+    pool.push({ type:'warlord_dmg' });
   }
   return pool;
 }
@@ -2742,15 +2869,20 @@ function applyUpgradeChoice(g, choice){
     for (var mi=0; mi<4; mi++){ if (!mod5.miniTranscended[mi]){ allMini = false; break; } }
     if (allMini && !mod5.greatTranscend){
       mod5.greatTranscend = true;
-      if (!mod5.runtime._transcend) setGreatTranscend(w5, mod5.runtime);
+      if (!mod5.runtime._transcend) setGreatTranscend(p, w5, mod5.runtime);
       showTranscendBanner(w5.icon + ' ' + w5.name + ' · ' + w5.exclusiveName);
       toast('✨ 大质变！' + w5.name + ' → ' + w5.exclusiveName);
       SFX.transcend();
     }
   }
+  else if (choice.type === 'warlord_dmg'){
+    p.warlordDmgLevel++;
+    var bonus = p.warlordDmgLevel * p.warlordDmgPerLevel;
+    toast('🌟 ' + '武曲星·伤害 Lv.' + p.warlordDmgLevel + '（双枪 +' + bonus + '）');
+  }
 }
 
-function setGreatTranscend(w, rt){
+function setGreatTranscend(p, w, rt){
   var id = w.id;
   if (id === 'hero_melee_warrior') rt._transcend = 'groundShatter';
   else if (id === 'hero_arrow_ranger') rt._transcend = 'arrowSplit';
@@ -2762,6 +2894,13 @@ function setGreatTranscend(w, rt){
   else if (id === 'uni_lightning') rt._transcend = 'thunderStorm';
   else if (id === 'uni_firewhirl') rt._transcend = 'firewhirlStorm';
   else if (id === 'uni_gravity') rt._transcend = 'singularity';
+  else if (id === 'hero_melee_warlord'){
+    rt._wlDevour = 0.05;
+    rt._wlMinDmg = 0.005;
+    rt._wlTranscend = true;
+    rt._wlSweepRange = (rt._wlSweepRange || 0) + 0.25;
+    applyToWarlordRanged(p, rt);
+  }
 }
 
 function doRefresh(){
@@ -2935,6 +3074,16 @@ function renderChoices(){
           '<div class="upgrade-name">'+stData.name+'</div>' +
           '<div class="upgrade-desc">'+stData.desc+'</div>' +
           '<div class="upgrade-lv">本阶段 '+cnt+' / 3</div>';
+      }
+      else if (choice.type === 'warlord_dmg'){
+        var nextLv = p.warlordDmgLevel + 1;
+        var bonus = nextLv * p.warlordDmgPerLevel;
+        card.classList.add('tier-exclusive');
+        html = '<div class="upgrade-tag exclusive">武曲星</div>' +
+          '<div class="upgrade-icon">🌟</div>' +
+          '<div class="upgrade-name">武曲星·伤害</div>' +
+          '<div class="upgrade-desc">双枪基础伤害 <b>+' + bonus + '</b></div>' +
+          '<div class="upgrade-lv">已选 ' + p.warlordDmgLevel + ' / ' + p.warlordDmgMax + '</div>';
       }
       card.innerHTML = html;
       card.onclick = function(){ selectUpgrade(choice); };
@@ -3434,6 +3583,52 @@ function update(dt){
           g.novae.push({ x:pr.x, y:pr.y, radius:0, maxRadius:br, life:0.3, maxLife:0.3, color:'#ff8a3d' });
         }
       }
+    } else if (pr.kind === 'missile'){
+      pr.life -= dt;
+      var bestId = null; var bestDsq = Infinity;
+      for (var mi2=0;mi2<g.enemies.length;mi2++){
+        var me2 = g.enemies[mi2];
+        if (me2.dead) continue;
+        if (pr.hitList.indexOf(me2.id) >= 0) continue;
+        var d2 = distSq(pr.x, pr.y, me2.x, me2.y);
+        if (d2 < bestDsq){ bestDsq = d2; bestId = me2.id; }
+      }
+      if (bestId === null){
+        for (var mi3=0;mi3<g.enemies.length;mi3++){
+          var me3 = g.enemies[mi3];
+          if (me3.dead) continue;
+          var d3 = distSq(pr.x, pr.y, me3.x, me3.y);
+          if (d3 < bestDsq){ bestDsq = d3; bestId = me3.id; }
+        }
+      }
+      if (bestId !== null){
+        var target = null;
+        for (var mi4=0;mi4<g.enemies.length;mi4++){
+          if (g.enemies[mi4].id === bestId){ target = g.enemies[mi4]; break; }
+        }
+        if (target){
+          var angM = Math.atan2(target.y - pr.y, target.x - pr.x);
+          pr.vx = Math.cos(angM) * pr.speed;
+          pr.vy = Math.sin(angM) * pr.speed;
+        }
+      }
+      pr.x += pr.vx * dt;
+      pr.y += pr.vy * dt;
+
+      for (var pei2=0;pei2<g.enemies.length;pei2++){
+        var pe2 = g.enemies[pei2];
+        if (pe2.dead) continue;
+        if (pr.hitList.indexOf(pe2.id) >= 0) continue;
+        var plim2 = pe2.radius + pr.radius;
+        if (distSq(pe2.x, pe2.y, pr.x, pr.y) < plim2*plim2){
+          var angP2 = Math.atan2(pr.vy, pr.vx);
+          var critP2 = p.rollCrit();
+          var dmgP2 = pr.damage * (critP2 ? 4 : 1);
+          applyHit(g, pe2, dmgP2, pr.knockback, angP2, critP2, pr.src);
+          pr.hitList.push(pe2.id);
+          if (pr.hitList.length > pr.hitListMax) pr.hitList.shift();
+        }
+      }
     } else {
       pr.x += pr.vx * dt;
       pr.y += pr.vy * dt;
@@ -3913,6 +4108,17 @@ function render(dt){
       ctx.shadowBlur = 16; ctx.shadowColor = '#ffd76e';
       ctx.fillStyle = '#fff0a0';
       ctx.beginPath(); ctx.arc(0, 0, radW*0.35, 0, Math.PI*2); ctx.fill();
+    } else if (pr.kind === 'missile'){
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = pr.color;
+      ctx.fillStyle = pr.color;
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.arc(0, 0, pr.radius*2.2, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, pr.radius*0.6, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = pr.color;
+      ctx.beginPath(); ctx.arc(0, 0, pr.radius, 0, Math.PI*2); ctx.fill();
     } else {
       var angPr = Math.atan2(pr.vy, pr.vx);
       ctx.translate(sP.x, sP.y); ctx.rotate(angPr);
@@ -4456,6 +4662,16 @@ function drawWeaponIconShape(ctx, kind, cx, cy, sz){
     ctx.globalAlpha = 1;
     ctx.beginPath(); ctx.arc(cx, cy, hsz*0.12, 0, Math.PI*2); ctx.fill();
   }
+  else if (kind === 'missile'){
+    ctx.fillStyle = '#c878ff';
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.7, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.25, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#e0c0ff';
+    ctx.beginPath(); ctx.arc(cx, cy, hsz*0.4, 0, Math.PI*2); ctx.fill();
+  }
 
   ctx.restore();
 }
@@ -4725,19 +4941,39 @@ function buildHeroGrid(){
   if (goldEl) goldEl.textContent = save.gold;
   for (var key in HEROES){
     var h = HEROES[key];
-    var unlocked = save.unlocked.indexOf(key) >= 0;
+    var unlocked = (key === 'warlord') ? save.warlordUnlocked : (save.unlocked.indexOf(key) >= 0);
     var hw = WEAPONS[h.heroWeapon];
     var card = document.createElement('div');
     card.className = 'hero-card' + (unlocked ? '' : ' locked');
+    var fragHtml = '';
+    if (key === 'warlord' && !unlocked){
+      var fragCollected = 0;
+      for (var fk in save.fragments){ if (save.fragments[fk]) fragCollected++; }
+      fragHtml = '<div class="hero-fragments">碎片 <b>' + fragCollected + '</b> / 5</div>';
+    }
     card.innerHTML =
       '<div class="hero-icon">'+h.icon+'</div>' +
       '<div class="hero-name">'+h.name+'</div>' +
       '<div class="hero-desc">'+h.desc+'</div>' +
       '<div class="hero-weapon">'+hw.icon+' '+hw.name+'</div>' +
-      (unlocked ? '' : '<div class="hero-cost">💰 '+h.cost+'</div>');
+      fragHtml +
+      (unlocked ? '' : (key === 'warlord' ? '' : '<div class="hero-cost">💰 '+h.cost+'</div>'));
     (function(k, isUnlocked, cost, name){
       card.onclick = function(){
         if (isUnlocked) startGame(k);
+        else if (k === 'warlord'){
+          var frags = 0;
+          for (var fk2 in save.fragments){ if (save.fragments[fk2]) frags++; }
+          if (frags >= 5){
+            save.warlordUnlocked = true;
+            persist();
+            showTranscendBanner('🌟 天神下凡！武曲星已解锁！');
+            toast('🌟 武曲星已解锁！');
+            setTimeout(function(){ buildHeroGrid(); }, 1500);
+          } else {
+            toast('需要集齐 5 块碎片（当前 ' + frags + '/5）');
+          }
+        }
         else if (save.gold >= cost){
           save.gold -= cost;
           save.unlocked.push(k);
