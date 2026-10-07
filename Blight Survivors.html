@@ -1264,7 +1264,7 @@ var WEAPONS = {
     ]
   },
   uni_gravity: {
-    id:'uni_gravity', category:'universal', wtype:'attack', name:'引力奇点', icon:'🕳️',
+    id:'uni_gravity', category:'universal', wtype:'utility', name:'引力奇点', icon:'🕳️',
     kind:'gravity', damage:8, atkSpeed:3.0, range:220, projSpeed:0,
     knockback: 0, desc:'将大范围敌人拉向自身并造成伤害，按伤害回血，溢出治疗转为临时全体增益',
     healPct: 0.15, overflowPct: 0.12, buffDur: 3.0,
@@ -1303,6 +1303,27 @@ var WEAPONS = {
       { name:'毒印·蔓延', desc:'毒圈范围 +15，飞行距离 +30',
         apply:function(p,rt){ rt._circleR = (rt._circleR||0) + 15; rt._toxRange = (rt._toxRange||0) + 30; },
         miniTranscend:function(p,rt){ rt._circleR = (rt._circleR||0) + 10; rt._toxRange = (rt._toxRange||0) + 20; } }
+    ]
+  },
+  uni_judgment: {
+    id:'uni_judgment', category:'universal', wtype:'attack', name:'裁决之剑', icon:'⚔️',
+    kind:'judgment', damage:16, atkSpeed:3.0, range:2000, projSpeed:500,
+    knockback:20, desc:'锁定低血量怪物，飞剑斩杀，路径伤害',
+    hpThreshold:6, swordSpeed:500, hoverTime:0.5, impactRadius:0,
+    exclusiveName:'天罚裁决',
+    exclusiveStages:[
+      { name:'裁决·阈值', desc:'斩杀血量阈值 +1%（最多10%）',
+        apply:function(p,rt){ rt._threshold = (rt._threshold||0) + 1; },
+        miniTranscend:function(p,rt){ rt._threshold = (rt._threshold||0) + 1; } },
+      { name:'裁决·锋芒', desc:'基础伤害 +6',
+        apply:function(p,rt){ rt._dmgBonus = (rt._dmgBonus||0) + 6; },
+        miniTranscend:function(p,rt){ rt._dmgBonus = (rt._dmgBonus||0) + 12; } },
+      { name:'裁决·震击', desc:'落地冲击波范围 +30',
+        apply:function(p,rt){ rt._impactR = (rt._impactR||0) + 30; },
+        miniTranscend:function(p,rt){ rt._impactR = (rt._impactR||0) + 50; } },
+      { name:'裁决·禁锢', desc:'冲击波减速 +5%，基础伤害 +4',
+        apply:function(p,rt){ rt._slowPct = (rt._slowPct||0) + 0.05; rt._dmgBonus2 = (rt._dmgBonus2||0) + 4; },
+        miniTranscend:function(p,rt){ rt._slowPct = (rt._slowPct||0) + 0.05; rt._dmgBonus2 = (rt._dmgBonus2||0) + 8; } }
     ]
   },
   hero_melee_warlord: {
@@ -1823,7 +1844,7 @@ function createGame(heroKey){
     player: new Player(heroKey),
     enemies: [], projectiles: [], gems: [], chests: [],
     particles: [], damageTexts: [], novae: [], lightningEffects: [],
-    vortexes: [], enemyProjectiles: [], toxinCircles: [],
+    vortexes: [], enemyProjectiles: [], toxinCircles: [], judgmentSwords: [],
     time: 0, kills: 0, level: 1, xp: 0, xpNext: 5,
     goldEarned: 0,
     wave: 0, waveTimer: 5, waveActive: false,
@@ -2457,6 +2478,33 @@ function weaponAttack(g, wid){
       rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend }
     });
   }
+  else if (w.kind === 'judgment'){
+    var thresholdPct = w.hpThreshold + (rt._threshold||0);
+    var bestTarget = null; var bestHp = -1;
+    for (var jei=0;jei<g.enemies.length;jei++){
+      var je = g.enemies[jei];
+      if (je.dead) continue;
+      if (je.isBoss) continue;
+      var hpPct = je.hp / je.maxHp * 100;
+      if (hpPct < thresholdPct && je.hp > bestHp){
+        bestHp = je.hp; bestTarget = je;
+      }
+    }
+    if (!bestTarget) return;
+    SFX.slash();
+    var jDmg = stats.dmg + (rt._dmgBonus||0) + (rt._dmgBonus2||0);
+    var jImpactR = (rt._impactR||0);
+    var jSlowPct = (rt._slowPct||0);
+    g.judgmentSwords.push({
+      x: p.x, y: p.y - 80,
+      targetId: bestTarget.id, targetX: bestTarget.x, targetY: bestTarget.y,
+      phase: 'flying', phaseTimer: 0,
+      damage: jDmg, speed: w.swordSpeed,
+      radius: 16, hitEnemies: {},
+      impactR: jImpactR, slowPct: jSlowPct,
+      src: wid, rt: rt
+    });
+  }
   else if (w.kind === 'flame'){
     var targets8 = selectTargets(g, w, 1, stats.range, false);
     if (targets8.length === 0) return;
@@ -2958,6 +3006,7 @@ function setGreatTranscend(p, w, rt){
   else if (id === 'uni_firewhirl') rt._transcend = 'firewhirlStorm';
   else if (id === 'uni_gravity') rt._transcend = 'singularity';
   else if (id === 'uni_toxin') rt._transcend = 'toxinPierce';
+  else if (id === 'uni_judgment') rt._transcend = 'judgmentChain';
   else if (id === 'hero_melee_warlord'){
     rt._wlDevour = 0.05;
     rt._wlMinDmg = 0.005;
@@ -3909,6 +3958,122 @@ function update(dt){
   }
   compact(g.toxinCircles, function(tc){ return tc.life <= 0; });
 
+  // 裁决之剑更新
+  for (var jsi=0;jsi<g.judgmentSwords.length;jsi++){
+    var js = g.judgmentSwords[jsi];
+    js.phaseTimer += dt;
+
+    if (js.phase === 'flying'){
+      var dxJ = js.targetX - js.x;
+      var dyJ = (js.targetY - 60) - js.y;
+      var dJ = Math.sqrt(dxJ*dxJ + dyJ*dyJ) || 1;
+      var moveJ = js.speed * dt;
+      if (moveJ >= dJ){
+        js.x = js.targetX;
+        js.y = js.targetY - 60;
+        js.phase = 'hovering';
+        js.phaseTimer = 0;
+      } else {
+        js.x += dxJ/dJ * moveJ;
+        js.y += dyJ/dJ * moveJ;
+
+        // 路径伤害
+        for (var jpe=0;jpe<g.enemies.length;jpe++){
+          var jpe2 = g.enemies[jpe];
+          if (jpe2.dead || js.hitEnemies[jpe2.id]) continue;
+          var jplim = jpe2.radius + js.radius + 8;
+          if (distSq(jpe2.x, jpe2.y, js.x, js.y) < jplim*jplim){
+            js.hitEnemies[jpe2.id] = 1;
+            var jpCrit = p.rollCrit();
+            var jpDmg = js.damage * (jpCrit ? 4 : 1);
+            applyHit(g, jpe2, jpDmg, 30, Math.atan2(jpe2.y-js.y, jpe2.x-js.x), jpCrit, js.src);
+          }
+        }
+      }
+    } else if (js.phase === 'hovering'){
+      var jtarget = null;
+      for (var jti=0;jti<g.enemies.length;jti++){
+        if (g.enemies[jti].id === js.targetId && !g.enemies[jti].dead){
+          jtarget = g.enemies[jti]; break;
+        }
+      }
+      if (!jtarget){
+        js.phase = 'done'; js.phaseTimer = 0; continue;
+      }
+      jtarget.stunTimer = Math.max(jtarget.stunTimer||0, dt + 0.5);
+      js.x = jtarget.x;
+      js.y = jtarget.y - 60;
+      if (js.phaseTimer >= 0.5){
+        js.phase = 'dropping';
+        js.phaseTimer = 0;
+      }
+    } else if (js.phase === 'dropping'){
+      var jtarget2 = null;
+      for (var jti2=0;jti2<g.enemies.length;jti2++){
+        if (g.enemies[jti2].id === js.targetId && !g.enemies[jti2].dead){
+          jtarget2 = g.enemies[jti2]; break;
+        }
+      }
+      if (!jtarget2){
+        js.phase = 'done'; js.phaseTimer = 0; continue;
+      }
+      js.y += js.speed * 2 * dt;
+      if (js.y >= jtarget2.y){
+        // 斩杀
+        var exDmgJ = jtarget2.hp + 99999;
+        applyHit(g, jtarget2, exDmgJ, 0, 0, false, js.src);
+
+        // 冲击波
+        if (js.impactR > 0){
+          var impR = js.impactR;
+          var impRsq = impR * impR;
+          g.novae.push({ x:jtarget2.x, y:jtarget2.y, radius:0, maxRadius:impR, life:0.5, maxLife:0.5, color:'#ffd76e' });
+          for (var impe=0;impe<g.enemies.length;impe++){
+            var ime = g.enemies[impe];
+            if (ime.dead || ime.id === js.targetId) continue;
+            if (distSq(ime.x, ime.y, jtarget2.x, jtarget2.y) < impRsq){
+              var imCrit = p.rollCrit();
+              var imDmg = js.damage * (imCrit ? 4 : 1);
+              applyHit(g, ime, imDmg, js.impactR > 0 ? 60 : 0, Math.atan2(ime.y-jtarget2.y, ime.x-jtarget2.x), imCrit, js.src);
+              if (js.slowPct > 0){
+                ime.slowFactor = Math.min(ime.slowFactor||1, 1 - js.slowPct);
+                ime.slowTimer = Math.max(ime.slowTimer||0, 2.0);
+              }
+            }
+          }
+        }
+
+        // 大质变连锁
+        if (js.rt && js.rt._transcend === 'judgmentChain' && js.chainCount < 2){
+          var chainThres = 6 + (js.rt._threshold||0);
+          var chainTarget = null; var chainHp = -1;
+          for (var che=0;che<g.enemies.length;che++){
+            var che2 = g.enemies[che];
+            if (che2.dead || che2.id === js.targetId || che2.isBoss) continue;
+            var chpPct = che2.hp / che2.maxHp * 100;
+            if (chpPct < chainThres && che2.hp > chainHp){
+              chainHp = che2.hp; chainTarget = che2;
+            }
+          }
+          if (chainTarget){
+            g.judgmentSwords.push({
+              x: jtarget2.x, y: jtarget2.y - 80,
+              targetId: chainTarget.id, targetX: chainTarget.x, targetY: chainTarget.y,
+              phase: 'flying', phaseTimer: 0,
+              damage: js.damage, speed: js.speed,
+              radius: 14, hitEnemies: {},
+              impactR: js.impactR, slowPct: js.slowPct,
+              src: js.src, rt: js.rt, chainCount: (js.chainCount||0) + 1
+            });
+          }
+        }
+
+        js.phase = 'done';
+      }
+    }
+  }
+  compact(g.judgmentSwords, function(js){ return js.phase === 'done'; });
+
   var pickupR = p.pickupRange;
   for (var gi=0;gi<g.gems.length;gi++){
     var gem = g.gems[gi];
@@ -4310,6 +4475,37 @@ function render(dt){
     ctx.lineWidth = 6*aN + 2;
     ctx.shadowBlur = 20; ctx.shadowColor = n.color || '#a8e8ff';
     ctx.beginPath(); ctx.arc(sN.x, sN.y, n.radius, 0, Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
+  // 裁决之剑渲染
+  for (var jsi=0;jsi<g.judgmentSwords.length;jsi++){
+    var js2 = g.judgmentSwords[jsi];
+    if (js2.x < vMinX || js2.x > vMaxX || js2.y < vMinY || js2.y > vMaxY) continue;
+    var sJ2 = worldToScreen(js2.x, js2.y);
+    ctx.save();
+    ctx.translate(sJ2.x, sJ2.y);
+    // 光柱
+    var glowGrad = ctx.createLinearGradient(0, -80, 0, 20);
+    glowGrad.addColorStop(0, 'rgba(255,200,80,0)');
+    glowGrad.addColorStop(0.5, 'rgba(255,200,80,0.25)');
+    glowGrad.addColorStop(1, 'rgba(255,200,80,0.05)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(-10, -80, 20, 100);
+    // 剑身
+    ctx.shadowBlur = 20; ctx.shadowColor = '#ffd76e';
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(0, -22); ctx.lineTo(5, -10); ctx.lineTo(3, -6);
+    ctx.lineTo(8, -2); ctx.lineTo(0, 6);
+    ctx.lineTo(-8, -2); ctx.lineTo(-3, -6); ctx.lineTo(-5, -10);
+    ctx.closePath(); ctx.fill();
+    // 剑柄
+    ctx.fillStyle = '#ffe0a0';
+    ctx.fillRect(-2, 6, 4, 8);
+    ctx.fillStyle = '#ffd76e';
+    ctx.fillRect(-4, 14, 8, 2);
+    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
