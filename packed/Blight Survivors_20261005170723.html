@@ -1181,7 +1181,7 @@ var WEAPONS = {
     ]
   },
   uni_boomerang: {
-    id:'uni_boomerang', category:'universal', wtype:'attack', name:'回旋镖', icon:'↩',
+    id:'uni_boomerang', category:'universal', wtype:'attack', name:'回旋镖', icon:'🪃',
     kind:'boomerang', damage:10, atkSpeed:1.6, range:280, projSpeed:420,
     knockback: 40, desc:'飞出后返回，可多次命中',
     exclusiveName:'回旋风暴',
@@ -1282,27 +1282,6 @@ var WEAPONS = {
       { name:'引力·奇点', desc:'伤害 +2，范围 +5%',
         apply:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 2; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; },
         miniTranscend:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 4; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; } }
-    ]
-  },
-  uni_toxin: {
-    id:'uni_toxin', category:'universal', wtype:'attack', name:'瘟疫之种', icon:'☠️',
-    kind:'toxin', damage:8, atkSpeed:1.5, range:320, projSpeed:350,
-    knockback:10, desc:'命中后留下毒圈，叠加剧毒印记，周期性百分比扣血',
-    circleRBase:60, circleLife:6.0, markDmgPct:0.01, tickIntervalBase:3.0,
-    exclusiveName:'剧毒绽放',
-    exclusiveStages:[
-      { name:'毒印·上限', desc:'剧毒印记层级上限 +1',
-        apply:function(p,rt){ rt._markCap = (rt._markCap||0) + 1; },
-        miniTranscend:function(p,rt){ rt._markCap = (rt._markCap||0) + 1; } },
-      { name:'毒印·侵蚀', desc:'剧毒触发间隔 -0.5 秒',
-        apply:function(p,rt){ rt._tickSpd = (rt._tickSpd||0) + 0.5; },
-        miniTranscend:function(p,rt){ rt._tickSpd = (rt._tickSpd||0) + 0.5; } },
-      { name:'毒印·爆发', desc:'直接伤害 +4；死后印记爆炸',
-        apply:function(p,rt){ rt._toxDmg = (rt._toxDmg||0) + 4; },
-        miniTranscend:function(p,rt){ rt._toxDmg = (rt._toxDmg||0) + 8; rt._toxExplode = true; } },
-      { name:'毒印·蔓延', desc:'毒圈范围 +15，飞行距离 +30',
-        apply:function(p,rt){ rt._circleR = (rt._circleR||0) + 15; rt._toxRange = (rt._toxRange||0) + 30; },
-        miniTranscend:function(p,rt){ rt._circleR = (rt._circleR||0) + 10; rt._toxRange = (rt._toxRange||0) + 20; } }
     ]
   },
   hero_melee_warlord: {
@@ -1823,7 +1802,7 @@ function createGame(heroKey){
     player: new Player(heroKey),
     enemies: [], projectiles: [], gems: [], chests: [],
     particles: [], damageTexts: [], novae: [], lightningEffects: [],
-    vortexes: [], enemyProjectiles: [], toxinCircles: [],
+    vortexes: [], enemyProjectiles: [],
     time: 0, kills: 0, level: 1, xp: 0, xpNext: 5,
     goldEarned: 0,
     wave: 0, waveTimer: 5, waveActive: false,
@@ -2439,24 +2418,6 @@ function weaponAttack(g, wid){
       });
     }
   }
-  else if (w.kind === 'toxin'){
-    var targetsT = selectTargets(g, w, 1, stats.range, false);
-    if (targetsT.length === 0) return;
-    SFX.shoot();
-    var tgtT = targetsT[0];
-    var angT = Math.atan2(tgtT.y-p.y, tgtT.x-p.x);
-    var tRange = stats.range + (rt._toxRange||0);
-    var tCircleR = w.circleRBase + (rt._circleR||0);
-    var tMarkCap = 1 + (rt._markCap||0);
-    g.projectiles.push({
-      x:p.x, y:p.y,
-      vx: Math.cos(angT) * w.projSpeed, vy: Math.sin(angT) * w.projSpeed,
-      radius:6, damage: stats.dmg + (rt._toxDmg||0), knockback: stats.knockback,
-      hit:{}, life: tRange / w.projSpeed, color:'#5aff5a', kind:'toxin', src: wid,
-      maxDist: tRange, dist: 0,
-      rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend }
-    });
-  }
   else if (w.kind === 'flame'){
     var targets8 = selectTargets(g, w, 1, stats.range, false);
     if (targets8.length === 0) return;
@@ -2643,30 +2604,6 @@ function killEnemy(g, e, dirAngle){
       }
     }
     g.novae.push({ x:e.x, y:e.y, radius:0, maxRadius:r2, life:0.4, maxLife:0.4, color:'#ff8a3d' });
-  }
-
-  // 毒尸爆炸
-  if (e.toxinMarks > 0){
-    var toxRt3 = p.weaponMods['uni_toxin'] && p.weaponMods['uni_toxin'].runtime;
-    if (toxRt3 && toxRt3._toxExplode && toxRt3._toxDmg > 0){
-      var toxBDmg = (WEAPONS.uni_toxin.damage + toxRt3._toxDmg) * e.toxinMarks;
-      var toxBR = 60 + (toxRt3._circleR||0);
-      var toxBRsq = toxBR * toxBR;
-      g.novae.push({ x:e.x, y:e.y, radius:0, maxRadius:toxBR, life:0.4, maxLife:0.4, color:'#5aff5a' });
-      for (var txi2=0;txi2<g.enemies.length;txi2++){
-        var tx2 = g.enemies[txi2];
-        if (tx2 === e || tx2.dead) continue;
-        if (distSq(tx2.x, tx2.y, e.x, e.y) < toxBRsq){
-          var txCrit = p.rollCrit();
-          var txDmg = toxBDmg * (txCrit ? 4 : 1);
-          applyHit(g, tx2, txDmg, 0, Math.atan2(tx2.y-e.y, tx2.x-e.x), txCrit, 'uni_toxin');
-          var txCap = 1 + (toxRt3._markCap||0);
-          tx2.toxinMarks = Math.min(txCap, (tx2.toxinMarks||0) + 1);
-          tx2.toxinTickTimer = Math.min(3.0, tx2.toxinTickTimer||3.0);
-          tx2.toxinSrc = 'uni_toxin';
-        }
-      }
-    }
   }
 
   if (e.splitOnDeath > 0){
@@ -2957,7 +2894,6 @@ function setGreatTranscend(p, w, rt){
   else if (id === 'uni_lightning') rt._transcend = 'thunderStorm';
   else if (id === 'uni_firewhirl') rt._transcend = 'firewhirlStorm';
   else if (id === 'uni_gravity') rt._transcend = 'singularity';
-  else if (id === 'uni_toxin') rt._transcend = 'toxinPierce';
   else if (id === 'hero_melee_warlord'){
     rt._wlDevour = 0.05;
     rt._wlMinDmg = 0.005;
@@ -3374,27 +3310,6 @@ function update(dt){
       if (en2.hp <= 0 && !en2.dead) killEnemy(g, en2, 0);
     }
 
-    if (en2.toxinMarks > 0){
-      var toxRt = p.weaponMods['uni_toxin'] && p.weaponMods['uni_toxin'].runtime;
-      var toxInterval = 3.0;
-      if (toxRt) toxInterval = Math.max(1.0, 3.0 - (toxRt._tickSpd||0));
-      en2.toxinTickTimer = (en2.toxinTickTimer > toxInterval ? toxInterval : en2.toxinTickTimer||toxInterval);
-      en2.toxinTickTimer -= dt;
-      if (en2.toxinTickTimer <= 0){
-        en2.toxinTickTimer = toxInterval;
-        var dmgPct = en2.toxinMarks * 0.01;
-        var toxDmg = en2.maxHp * dmgPct;
-        en2.hp -= toxDmg;
-        g.damageStats['uni_toxin'] = (g.damageStats['uni_toxin']||0) + toxDmg;
-        en2.toxinMarks = Math.max(0, en2.toxinMarks - 1);
-        if (Math.random() < 0.15){
-          g.particles.push({ type:'spark', x:en2.x + rand(-6,6), y:en2.y + rand(-6,6),
-            vx: rand(-20,20), vy: rand(-40,-10), life:0.4, maxLife:0.4, color:'#5aff5a' });
-        }
-        if (en2.hp <= 0 && !en2.dead) killEnemy(g, en2, 0);
-      }
-    }
-
     if (en2.isBoss){
       if (en2.selfHeal){
         en2.healTimer -= dt;
@@ -3513,7 +3428,6 @@ function update(dt){
       var ar = a.radius;
       for (var j = i + 1; j < clen; j++){
         var b = cell[j];
-        if (a.isBoss || b.isBoss) continue;
         var ddx = b.x - a.x, ddy = b.y - a.y;
         var d2sq = ddx*ddx + ddy*ddy;
         var minD = ar + b.radius;
@@ -3715,43 +3629,6 @@ function update(dt){
           if (pr.hitList.length > pr.hitListMax) pr.hitList.shift();
         }
       }
-    } else if (pr.kind === 'toxin'){
-      pr.x += pr.vx * dt;
-      pr.y += pr.vy * dt;
-      pr.life -= dt;
-      pr.dist += Math.sqrt(pr.vx*pr.vx + pr.vy*pr.vy) * dt;
-
-      var isPierce = (pr.rt.transcend === 'toxinPierce');
-      for (var txi=0;txi<g.enemies.length;txi++){
-        var tx = g.enemies[txi];
-        if (tx.dead || pr.hit[tx.id]) continue;
-        var tlim = tx.radius + pr.radius;
-        if (distSq(tx.x, tx.y, pr.x, pr.y) < tlim*tlim){
-          var angTX = Math.atan2(pr.vy, pr.vx);
-          var tCrit = p.rollCrit();
-          var tDmg = pr.damage * (tCrit ? 4 : 1);
-          applyHit(g, tx, tDmg, pr.knockback, angTX, tCrit, pr.src);
-
-          tx.toxinMarks = Math.min(pr.rt.markCap, (tx.toxinMarks||0) + 1);
-          tx.toxinTickTimer = Math.min(3.0, tx.toxinTickTimer||3.0);
-          tx.toxinSrc = 'uni_toxin';
-
-          g.toxinCircles.push({
-            x: tx.x, y: tx.y,
-            radius: pr.rt.circleR,
-            life: pr.rt.circleLife, maxLife: pr.rt.circleLife,
-            markCap: pr.rt.markCap
-          });
-
-          if (!isPierce){
-            pr.life = 0;
-            break;
-          }
-          pr.hit[tx.id] = 1;
-        }
-      }
-
-      if (pr.dist >= pr.maxDist || pr.life <= 0) pr.life = 0;
     } else {
       pr.x += pr.vx * dt;
       pr.y += pr.vy * dt;
@@ -3884,30 +3761,6 @@ function update(dt){
     }
   }
   compact(g.vortexes, function(v){ return v.life <= 0; });
-
-  // 毒圈更新
-  var toxRt2 = p.weaponMods['uni_toxin'] && p.weaponMods['uni_toxin'].runtime;
-  var toxMarkCap = 1 + (toxRt2 ? (toxRt2._markCap||0) : 0);
-  for (var tci=0;tci<g.toxinCircles.length;tci++){
-    var tc = g.toxinCircles[tci];
-    tc.life -= dt;
-    tc.tickTimer = (tc.tickTimer > 0.5 ? 0.5 : tc.tickTimer||0.5);
-    tc.tickTimer -= dt;
-    if (tc.tickTimer <= 0){
-      tc.tickTimer = 0.5;
-      var tcRsq = tc.radius * tc.radius;
-      for (var tcei=0;tcei<g.enemies.length;tcei++){
-        var tce = g.enemies[tcei];
-        if (tce.dead) continue;
-        if (distSq(tce.x, tce.y, tc.x, tc.y) < tcRsq){
-          tce.toxinMarks = Math.min(tc.markCap, (tce.toxinMarks||0) + 1);
-          tce.toxinTickTimer = Math.min(3.0, tce.toxinTickTimer||3.0);
-          tce.toxinSrc = 'uni_toxin';
-        }
-      }
-    }
-  }
-  compact(g.toxinCircles, function(tc){ return tc.life <= 0; });
 
   var pickupR = p.pickupRange;
   for (var gi=0;gi<g.gems.length;gi++){
@@ -4106,26 +3959,6 @@ function render(dt){
     ctx.strokeStyle = '#c9b6ff'; ctx.lineWidth = 3;
     ctx.shadowBlur = 20; ctx.shadowColor = '#c9b6ff';
     ctx.beginPath(); ctx.arc(sV.x, sV.y, v.radius, 0, Math.PI*2); ctx.stroke();
-    ctx.restore();
-  }
-
-  // 毒圈渲染
-  for (var tci=0;tci<g.toxinCircles.length;tci++){
-    var tc = g.toxinCircles[tci];
-    if (tc.x < vMinX || tc.x > vMaxX || tc.y < vMinY || tc.y > vMaxY) continue;
-    var sTC = worldToScreen(tc.x, tc.y);
-    var aTC = tc.life/tc.maxLife;
-    ctx.save();
-    ctx.globalAlpha = aTC*0.4;
-    ctx.fillStyle = '#2a5a2a';
-    ctx.beginPath(); ctx.arc(sTC.x, sTC.y, tc.radius, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = aTC*0.7;
-    ctx.strokeStyle = '#5aff5a'; ctx.lineWidth = 2.5;
-    ctx.shadowBlur = 12; ctx.shadowColor = '#5aff5a';
-    ctx.setLineDash([8, 4]);
-    ctx.beginPath(); ctx.arc(sTC.x, sTC.y, tc.radius, 0, Math.PI*2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
@@ -4866,10 +4699,7 @@ function drawWeaponBar(g){
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.roundRect(x, y, size, size, 8); ctx.fill(); ctx.stroke();
 
-    ctx.font = '28px "Segoe UI",sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(w.icon, x+size/2, y+size/2-2);
+    drawWeaponIconShape(ctx, w.kind, x+size/2, y+size/2-2, size);
 
     ctx.font = 'bold 9px "Segoe UI",sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
