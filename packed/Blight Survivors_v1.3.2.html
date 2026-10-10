@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -177,7 +177,16 @@
     min-width:230px;
     pointer-events:none;
   }
+  body.touch #damagePanel {
+    pointer-events:auto;
+    opacity:0.35;
+    transition:opacity .2s;
+  }
+  body.touch #damagePanel.dmg-opaque {
+    opacity:1;
+  }
   #damagePanel.hidden { display:none; }
+  body.touch #damagePanel.hidden { display:block; opacity:0.35; }
   .dmg-head { font-size:13px; font-weight:700; color:#ffd76e; margin-bottom:8px; letter-spacing:1px; }
   .dmg-row { display:flex; justify-content:space-between; gap:10px; margin:3px 0; }
   .dmg-name { color:#a8a8c0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -292,6 +301,24 @@
     user-select:none; touch-action:manipulation;
   }
   body.touch #touchPauseBtn { display:block; }
+  #landscapeHint {
+    position:fixed; inset:0; z-index:100;
+    background:rgba(6,6,14,0.95);
+    display:none; flex-direction:column;
+    align-items:center; justify-content:center;
+    color:#c8c8d8; font-size:16px; text-align:center;
+    gap:16px;
+  }
+  #landscapeHint .lh-icon {
+    font-size:48px; animation: lhRotate 2s ease-in-out infinite;
+  }
+  @keyframes lhRotate {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(90deg); }
+    75% { transform: rotate(0deg); }
+  }
+  body.touch.portrait #landscapeHint { display:flex; }
   #detailPanel {
     position:fixed; inset:0; z-index:15;
     display:none;
@@ -517,6 +544,7 @@
 <div id="toast"></div>
 <div id="joystick"><div id="joystickKnob"></div></div>
 <div id="touchPauseBtn">⏸</div>
+<div id="landscapeHint"><div class="lh-icon">📱</div><div>请将手机横屏以获得最佳体验</div></div>
 <div id="hintBar"><kbd>1-8</kbd> 道具 · <kbd>Tab</kbd> 详情 · <kbd>E</kbd> 伤害 · <kbd>ESC</kbd> 暂停</div>
 <div id="zoomIndicator">缩放: <span id="zoomVal">1.0x</span></div>
 <div id="transcendBanner">
@@ -644,7 +672,7 @@ if (!CanvasRenderingContext2D.prototype.roundRect){
 var canvas = document.getElementById('game');
 var ctx = canvas.getContext('2d');
 var W = 0, H = 0;
-function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; checkOrientation(); }
 window.addEventListener('resize', resize);
 resize();
 
@@ -1509,8 +1537,16 @@ function showZoomIndicator(){
 var joyEl = document.getElementById('joystick');
 var knobEl = document.getElementById('joystickKnob');
 var joyId = null, joyStart = {x:0,y:0};
+var pinchDist = 0, pinchActive = false;
 document.addEventListener('touchstart', function(e){
   if (state !== 'playing') return;
+  if (e.touches.length === 2){
+    var dx = e.touches[0].clientX - e.touches[1].clientX;
+    var dy = e.touches[0].clientY - e.touches[1].clientY;
+    pinchDist = Math.sqrt(dx*dx + dy*dy);
+    pinchActive = true;
+    return;
+  }
   var t = e.changedTouches[0];
   if (t.clientX < W*0.5){
     joyId = t.identifier;
@@ -1522,6 +1558,18 @@ document.addEventListener('touchstart', function(e){
   }
 }, {passive:true});
 document.addEventListener('touchmove', function(e){
+  if (pinchActive && e.touches.length === 2){
+    var dx = e.touches[0].clientX - e.touches[1].clientX;
+    var dy = e.touches[0].clientY - e.touches[1].clientY;
+    var newDist = Math.sqrt(dx*dx + dy*dy);
+    if (pinchDist > 0){
+      var ratio = newDist / pinchDist;
+      zoomLevel = clamp(zoomLevel * ratio, ZOOM_MIN, ZOOM_MAX);
+      showZoomIndicator();
+    }
+    pinchDist = newDist;
+    return;
+  }
   if (joyId === null) return;
   for (var i=0;i<e.changedTouches.length;i++){
     var t = e.changedTouches[i];
@@ -1538,12 +1586,22 @@ document.addEventListener('touchmove', function(e){
   }
 }, {passive:true});
 document.addEventListener('touchend', function(e){
+  if (e.touches.length < 2) pinchActive = false;
   for (var i=0;i<e.changedTouches.length;i++){
     var t = e.changedTouches[i];
     if (t.identifier === joyId){ joyId = null; joystick.active = false; joystick.dx = joystick.dy = 0; }
   }
 }, {passive:true});
 if (isTouchDevice) document.body.classList.add('touch');
+
+function checkOrientation(){
+  if (!isTouchDevice) return;
+  var portrait = window.innerHeight > window.innerWidth * 1.2;
+  if (portrait) document.body.classList.add('portrait');
+  else document.body.classList.remove('portrait');
+}
+checkOrientation();
+window.addEventListener('orientationchange', function(){ setTimeout(checkOrientation, 300); });
 
 var cam = { x:0, y:0 };
 function worldToScreen(x,y){
@@ -4188,7 +4246,8 @@ function updateBuffBar(){
 
 function renderDamagePanel(){
   var panel = document.getElementById('damagePanel');
-  if (!panel || panel.classList.contains('hidden')) return;
+  if (!panel) return;
+  if (panel.classList.contains('hidden') && !isTouchDevice) return;
   if (!game) return;
   var stats = game.damageStats;
   var total = 0;
@@ -4231,8 +4290,12 @@ function getDamageSourceName(key){
 function toggleDamagePanel(){
   var panel = document.getElementById('damagePanel');
   if (!panel) return;
-  panel.classList.toggle('hidden');
-  if (!panel.classList.contains('hidden')) renderDamagePanel();
+  if (isTouchDevice){
+    panel.classList.toggle('dmg-opaque');
+  } else {
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) renderDamagePanel();
+  }
 }
 
 // ============================================================
@@ -5580,6 +5643,12 @@ function bindUI(){
 
   if (isTouchDevice){
     document.getElementById('hintBar').style.display = 'none';
+    var dmgPanel = document.getElementById('damagePanel');
+    dmgPanel.classList.remove('hidden');
+    dmgPanel.onclick = function(e){
+      e.stopPropagation();
+      this.classList.toggle('dmg-opaque');
+    };
   }
 }
 
