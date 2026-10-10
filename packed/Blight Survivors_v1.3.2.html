@@ -11,6 +11,7 @@
     background:#0a0a12;
     font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
     user-select:none; -webkit-tap-highlight-color:transparent;
+    touch-action:none; overscroll-behavior:none;
   }
   #game { display:block; width:100%; height:100%; cursor:crosshair; }
   .overlay {
@@ -282,6 +283,15 @@
     left:35px; top:35px; pointer-events:none;
   }
   body.touch #joystick { display:block; }
+  #touchPauseBtn {
+    position:fixed; top:10px; right:10px; z-index:8;
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.3);
+    color:#fff; font-size:20px; line-height:44px; text-align:center;
+    display:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    user-select:none; touch-action:manipulation;
+  }
+  body.touch #touchPauseBtn { display:block; }
   #detailPanel {
     position:fixed; inset:0; z-index:15;
     display:none;
@@ -506,6 +516,7 @@
 <canvas id="game"></canvas>
 <div id="toast"></div>
 <div id="joystick"><div id="joystickKnob"></div></div>
+<div id="touchPauseBtn">⏸</div>
 <div id="hintBar"><kbd>1-8</kbd> 道具 · <kbd>Tab</kbd> 详情 · <kbd>E</kbd> 伤害 · <kbd>ESC</kbd> 暂停</div>
 <div id="zoomIndicator">缩放: <span id="zoomVal">1.0x</span></div>
 <div id="transcendBanner">
@@ -667,6 +678,7 @@ var sfxEnabled = true;
 var masterVolume = 0.5;
 var kbLimitBoss = 60;
 var kbLimitNormal = 150;
+var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 var controlMode = 'keyboard';
 try {
   var v0 = localStorage.getItem('blight_volume');
@@ -678,7 +690,7 @@ try {
   var kb2 = localStorage.getItem('blight_kb_normal');
   if (kb2 !== null) kbLimitNormal = clamp(parseFloat(kb2), 0, 200);
   var cm = localStorage.getItem('blight_control');
-  if (cm === 'mouse') controlMode = 'mouse';
+  if (cm === 'mouse' && !isTouchDevice) controlMode = 'mouse';
 } catch(e){}
 
 function initAudio(){
@@ -1499,7 +1511,6 @@ var knobEl = document.getElementById('joystickKnob');
 var joyId = null, joyStart = {x:0,y:0};
 document.addEventListener('touchstart', function(e){
   if (state !== 'playing') return;
-  if (controlMode === 'mouse') return;
   var t = e.changedTouches[0];
   if (t.clientX < W*0.5){
     joyId = t.identifier;
@@ -1532,7 +1543,7 @@ document.addEventListener('touchend', function(e){
     if (t.identifier === joyId){ joyId = null; joystick.active = false; joystick.dx = joystick.dy = 0; }
   }
 }, {passive:true});
-if ('ontouchstart' in window) document.body.classList.add('touch');
+if (isTouchDevice) document.body.classList.add('touch');
 
 var cam = { x:0, y:0 };
 function worldToScreen(x,y){
@@ -3267,8 +3278,8 @@ function update(dt){
     if (keys['s'] || keys['arrowdown']) my += 1;
     if (keys['a'] || keys['arrowleft']) mx -= 1;
     if (keys['d'] || keys['arrowright']) mx += 1;
-    if (joystick.active){ mx += joystick.dx; my += joystick.dy; }
   }
+  if (joystick.active){ mx += joystick.dx; my += joystick.dy; }
   var ml = Math.sqrt(mx*mx + my*my);
   if (ml > 1){ mx /= ml; my /= ml; }
   p.x += mx * p.baseSpeed * p.speedMult * dt;
@@ -5555,11 +5566,21 @@ function bindUI(){
   }
   updateCtrlLabel();
   ctrlToggle.onclick = function(){
+    if (isTouchDevice && controlMode === 'keyboard') return;
     controlMode = (controlMode === 'mouse') ? 'keyboard' : 'mouse';
     updateCtrlLabel();
     joystick.active = false; joystick.dx = 0; joystick.dy = 0;
     try { localStorage.setItem('blight_control', controlMode); } catch(e){}
   };
+
+  document.getElementById('touchPauseBtn').onclick = function(){
+    if (state === 'playing') pauseGame();
+    else if (state === 'paused') resumeGame();
+  };
+
+  if (isTouchDevice){
+    document.getElementById('hintBar').style.display = 'none';
+  }
 }
 
 try {
