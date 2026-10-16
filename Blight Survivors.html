@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -22,6 +22,7 @@
     backdrop-filter:blur(6px);
     z-index:10; color:#e8e8f0;
     overflow-y:auto;
+    touch-action:auto;
   }
   .overlay.hidden { display:none; }
   h1 {
@@ -41,6 +42,7 @@
     border:none; border-radius:8px; cursor:pointer;
     box-shadow:0 4px 0 #b56a1a, 0 6px 18px rgba(255,150,60,.35);
     transition:transform .08s, box-shadow .08s;
+    touch-action:manipulation;
   }
   .btn:active { transform:translateY(3px); box-shadow:0 1px 0 #b56a1a; }
   .btn.secondary {
@@ -59,6 +61,7 @@
     background:rgba(30,30,48,.9);
     border:2px solid #3a3a55; border-radius:12px;
     cursor:pointer; transition:.15s; text-align:center;
+    touch-action:manipulation;
   }
   .hero-card:hover { border-color:#ffb84d; transform:translateY(-3px); }
   .hero-card.locked { opacity:.45; cursor:not-allowed; }
@@ -93,11 +96,15 @@
     max-height:60vh; overflow-y:auto;
     padding-right:6px;
   }
+  body.touch .shop-grid {
+    grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+    gap:8px; max-height:55vh;
+  }
   .shop-item {
     background:rgba(28,28,46,.95);
     border:2px solid #4a4a70; border-radius:12px;
     padding:14px 12px; text-align:center;
-    transition:.15s;
+    transition:.15s; touch-action:manipulation;
   }
   .shop-item:hover { border-color:#ffd76e; }
   .shop-item-icon { font-size:34px; margin-bottom:6px; }
@@ -111,6 +118,7 @@
     color:#1a1208; font-weight:700; font-size:13px;
     cursor:pointer; user-select:none;
     box-shadow:0 2px 0 #b56a1a;
+    touch-action:manipulation;
   }
   .shop-item-price:active { transform:translateY(2px); box-shadow:0 0 0 #b56a1a; }
   .shop-item-price.disabled { opacity:.35; cursor:not-allowed; }
@@ -128,6 +136,12 @@
     display:flex; flex-direction:column; gap:6px;
     z-index:6;
   }
+  body.touch #itemBar {
+    right:6px; bottom:50px; gap:4px;
+  }
+  body.touch .item-slot {
+    width:40px; height:40px; font-size:18px;
+  }
   .item-slot {
     width:46px; height:46px;
     background:rgba(25,35,55,0.85);
@@ -135,7 +149,7 @@
     display:flex; align-items:center; justify-content:center;
     position:relative; cursor:pointer;
     transition:.15s;
-    font-size:22px;
+    font-size:22px; touch-action:manipulation;
   }
   .item-slot:hover { border-color:#ffd76e; }
   .item-slot.empty { opacity:.35; cursor:not-allowed; }
@@ -181,6 +195,9 @@
     pointer-events:auto;
     opacity:0.35;
     transition:opacity .2s;
+    right:6px; top:60px;
+    min-width:160px; font-size:11px;
+    padding:8px 10px;
   }
   body.touch #damagePanel.dmg-opaque {
     opacity:1;
@@ -199,12 +216,17 @@
     display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
     max-width:1120px; padding:0 12px;
   }
+  body.touch #upgradePanel .cards { gap:8px; padding:0 6px; }
+  body.touch .upgrade-card { width:160px; padding:12px 8px; }
+  body.touch .upgrade-icon { font-size:24px; }
+  body.touch .upgrade-name { font-size:12px; }
+  body.touch .upgrade-desc { font-size:10px; }
   .upgrade-card {
     width:200px; padding:16px 12px;
     background:rgba(28,28,46,.95);
     border:2px solid #4a4a70; border-radius:12px;
     cursor:pointer; transition:.15s; text-align:center;
-    position:relative;
+    position:relative; touch-action:manipulation;
   }
   .upgrade-card:hover { transform:translateY(-4px); }
   .upgrade-icon { font-size:30px; margin-bottom:5px; }
@@ -256,6 +278,7 @@
     font-size:13px; letter-spacing:1px; cursor:pointer;
     font-weight:700; transition:.15s;
     display:flex; align-items:center; gap:6px;
+    touch-action:manipulation;
   }
   .refresh-btn:hover:not(:disabled) { border-color:#ffd76e; color:#ffd76e; }
   .refresh-btn:disabled { opacity:.35; cursor:not-allowed; }
@@ -526,6 +549,7 @@
     border:2px solid #5a5a80; color:#fff;
     font-size:16px; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
+    touch-action:manipulation;
   }
   .volume-row .sfx-toggle:hover { border-color:#ffd76e; }
   .volume-row .ctrl-toggle {
@@ -534,7 +558,7 @@
     border:2px solid #5a5a80; color:#d8d8e8;
     font-size:13px; cursor:pointer;
     font-weight:700; transition:.15s;
-    min-width:120px;
+    min-width:120px; touch-action:manipulation;
   }
   .volume-row .ctrl-toggle:hover { border-color:#ffd76e; color:#ffd76e; }
 </style>
