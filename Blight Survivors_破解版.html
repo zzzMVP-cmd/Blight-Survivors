@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -4534,14 +4534,31 @@ function render(dt){
       ctx.fillStyle = '#fff0a0';
       ctx.beginPath(); ctx.arc(0, 0, radW*0.35, 0, Math.PI*2); ctx.fill();
     } else if (pr.kind === 'missile'){
+      ctx.translate(sP.x, sP.y);
+      var mAng = Math.atan2(pr.vy, pr.vx);
+      ctx.rotate(mAng);
+      if (pr.glowTrail){
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = '#c878ff';
+        ctx.beginPath(); ctx.arc(-12, 0, pr.radius*1.8, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.08;
+        ctx.beginPath(); ctx.arc(-24, 0, pr.radius*1.4, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       ctx.fillStyle = pr.color;
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.5;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*2.2, 0, Math.PI*2); ctx.fill();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*0.6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = pr.color;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-pr.radius*1.5, 0);
+      ctx.lineTo(pr.radius*1.5, 0);
+      ctx.stroke();
     } else {
       var angPr = Math.atan2(pr.vy, pr.vx);
       ctx.translate(sP.x, sP.y); ctx.rotate(angPr);

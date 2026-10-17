@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1143,7 +1143,7 @@ var BOSS_TYPE_ORDER = ['tank', 'speed', 'ranged'];
 var WEAPONS = {
   hero_melee_warrior: {
     id:'hero_melee_warrior', category:'hero', wtype:'attack', name:'裂地斩', icon:'⚔️',
-    kind:'melee', damage:14, atkSpeed:0.55, range:95, projSpeed:0,
+    kind:'melee', damage:16, atkSpeed:0.55, range:95, projSpeed:0,
     knockback: 34, desc:'战士专属：宽阔的近战挥砍',
     exclusiveName:'震荡波',
     exclusiveStages:[
@@ -1163,7 +1163,7 @@ var WEAPONS = {
   },
   hero_arrow_ranger: {
     id:'hero_arrow_ranger', category:'hero', wtype:'attack', name:'穿透箭', icon:'🏹',
-    kind:'arrow', damage:11, atkSpeed:0.42, range:340, projSpeed:520,
+    kind:'arrow', damage:13, atkSpeed:0.42, range:340, projSpeed:520,
     knockback: 18, desc:'游侠专属：高速远程箭矢',
     exclusiveName:'精准猎杀',
     exclusiveStages:[
@@ -1183,7 +1183,7 @@ var WEAPONS = {
   },
   hero_magic_mage: {
     id:'hero_magic_mage', category:'hero', wtype:'attack', name:'秘法弹', icon:'🔮',
-    kind:'magic', damage:22, atkSpeed:0.95, range:300, projSpeed:360,
+    kind:'magic', damage:24, atkSpeed:0.95, range:300, projSpeed:360,
     knockback: 26, desc:'法师专属：爆炸魔法弹',
     exclusiveName:'奥术回响',
     exclusiveStages:[
@@ -1203,7 +1203,7 @@ var WEAPONS = {
   },
   hero_melee_rogue: {
     id:'hero_melee_rogue', category:'hero', wtype:'attack', name:'影袭', icon:'🗡️',
-    kind:'melee', damage:8, atkSpeed:0.28, range:110, projSpeed:0,
+    kind:'melee', damage:10, atkSpeed:0.28, range:110, projSpeed:0,
     knockback: 14, desc:'刺客专属：极快的近战连击',
     speedCap: 6.0,
     exclusiveName:'影刃连击',
@@ -1224,7 +1224,7 @@ var WEAPONS = {
   },
   hero_melee_warlock: {
     id:'hero_melee_warlock', category:'hero', wtype:'attack', name:'烈焰喷涌', icon:'🔥',
-    kind:'flame', damage:6, atkSpeed:0.18, range:220, projSpeed:0,
+    kind:'flame', damage:10, atkSpeed:0.18, range:220, projSpeed:0,
     knockback: 4, desc:'术士专属：向最近目标喷射火焰流（高频低伤）',
     flameLength: 220, flameWidth: 26, burnBase: 1.5,
     speedCap: 6.0,
@@ -1246,7 +1246,7 @@ var WEAPONS = {
   },
   uni_boomerang: {
     id:'uni_boomerang', category:'universal', wtype:'attack', name:'回旋镖', icon:'↩',
-    kind:'boomerang', damage:10, atkSpeed:1.6, range:280, projSpeed:420,
+    kind:'boomerang', damage:12, atkSpeed:1.6, range:280, projSpeed:420,
     knockback: 40, desc:'飞出后返回，可多次命中',
     exclusiveName:'回旋风暴',
     exclusiveStages:[
@@ -1266,7 +1266,7 @@ var WEAPONS = {
   },
   uni_frost: {
     id:'uni_frost', category:'universal', wtype:'control', name:'寒冰碎片', icon:'❄️',
-    kind:'frost', damage:10, atkSpeed:1.0, range:300, projSpeed:380,
+    kind:'frost', damage:14, atkSpeed:1.0, range:300, projSpeed:380,
     knockback: 55, desc:'强击退，命中减速敌人，可吃力量加成',
     slowBase: 0.42, slowDurBase: 1.4,
     exclusiveName:'极寒领域',
@@ -1287,7 +1287,7 @@ var WEAPONS = {
   },
   uni_lightning: {
     id:'uni_lightning', category:'universal', wtype:'attack', name:'闪电链', icon:'⚡',
-    kind:'lightning', damage:14, atkSpeed:1.9, range:260, projSpeed:0,
+    kind:'lightning', damage:16, atkSpeed:1.9, range:260, projSpeed:0,
     knockback: 8, desc:'瞬间打击范围内敌人并眩晕',
     stunBase: 0.35,
     exclusiveName:'雷暴',
@@ -1308,7 +1308,7 @@ var WEAPONS = {
   },
   uni_firewhirl: {
     id:'uni_firewhirl', category:'universal', wtype:'attack', name:'火旋风', icon:'🌀',
-    kind:'firewhirl', damage:14, atkSpeed:1.4, range:260, projSpeed:140,
+    kind:'firewhirl', damage:16, atkSpeed:1.4, range:260, projSpeed:140,
     knockback: 28, desc:'向最近敌人射出火旋风，沿途击退并点燃（同一火旋风不重复叠层）',
     burnBase: 1.2, burnDur: 2.5,
     exclusiveName:'烈焰风暴',
@@ -1329,7 +1329,7 @@ var WEAPONS = {
   },
   uni_gravity: {
     id:'uni_gravity', category:'universal', wtype:'utility', name:'引力奇点', icon:'🕳️',
-    kind:'gravity', damage:8, atkSpeed:3.0, range:220, projSpeed:0,
+    kind:'gravity', damage:12, atkSpeed:3.0, range:220, projSpeed:0,
     knockback: 0, desc:'将大范围敌人拉向自身并造成伤害，按伤害回血，溢出治疗转为临时全体增益',
     healPct: 0.08, overflowPct: 0.18, buffDur: 3.0,
     exclusiveName:'万象引力',
@@ -1340,9 +1340,9 @@ var WEAPONS = {
       { name:'引力·领域', desc:'范围 +15%，增益持续 +1.5 秒',
         apply:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 1.5; },
         miniTranscend:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 2.0; } },
-      { name:'引力·充盈', desc:'增益效果上限 +10%',
-        apply:function(p,rt){ rt._gravBuffCap = (rt._gravBuffCap||0) + 0.10; },
-        miniTranscend:function(p,rt){ rt._gravBuffCap = (rt._gravBuffCap||0) + 0.15; } },
+      { name:'引力·充盈', desc:'溢出转化率 +5%',
+        apply:function(p,rt){ rt._overflowBonus = (rt._overflowBonus||0) + 0.05; },
+        miniTranscend:function(p,rt){ rt._overflowBonus = (rt._overflowBonus||0) + 0.08; } },
       { name:'引力·奇点', desc:'伤害 +2，范围 +5%',
         apply:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 2; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; },
         miniTranscend:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 4; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; } }
@@ -1350,7 +1350,7 @@ var WEAPONS = {
   },
   uni_toxin: {
     id:'uni_toxin', category:'universal', wtype:'attack', name:'瘟疫之种', icon:'☠️',
-    kind:'toxin', damage:8, atkSpeed:3.0, range:320, projSpeed:350,
+    kind:'toxin', damage:12, atkSpeed:3.0, range:320, projSpeed:350,
     knockback:10, desc:'命中后留下毒圈，叠加剧毒印记，周期性百分比扣血',
     circleRBase:60, circleLife:5.0, markDmgPct:0.005, tickIntervalBase:3.0, toxPierce:1,
     exclusiveName:'剧毒绽放',
@@ -1371,9 +1371,9 @@ var WEAPONS = {
   },
   uni_judgment: {
     id:'uni_judgment', category:'universal', wtype:'终结', name:'裁决之剑', icon:'🗡',
-    kind:'judgment', damage:10, atkSpeed:3.5, range:2000, projSpeed:500,
+    kind:'judgment', damage:12, atkSpeed:3.5, range:2000, projSpeed:800,
     knockback:20, desc:'锁定低血量怪物，飞剑斩杀，路径伤害',
-    hpThreshold:6, swordSpeed:500, hoverTime:0.5, impactRadius:0,
+    hpThreshold:6, swordSpeed:800, hoverTime:0.5, impactRadius:0,
     exclusiveName:'天罚裁决',
     exclusiveStages:[
       { name:'裁决·阈值', desc:'斩杀血量阈值 +1%（最多10%）',
@@ -1392,7 +1392,7 @@ var WEAPONS = {
   },
   hero_melee_warlord: {
     id:'hero_melee_warlord', category:'hero', wtype:'attack', name:'龙音枪·近', icon:'🔱',
-    kind:'melee', damage:50, atkSpeed:0.30, range:140, projSpeed:0,
+    kind:'melee', damage:54, atkSpeed:0.30, range:140, projSpeed:0,
     knockback:35, desc:'武曲星近战：180°大扇形横扫',
     noPower:true,
     exclusiveName:'紫纹龙音',
@@ -1413,7 +1413,7 @@ var WEAPONS = {
   },
   hero_arrow_warlord: {
     id:'hero_arrow_warlord', category:'hero', wtype:'attack', name:'龙音枪·远', icon:'🎯',
-    kind:'missile', damage:40, atkSpeed:0.40, range:450, projSpeed:520,
+    kind:'missile', damage:42, atkSpeed:0.40, range:450, projSpeed:520,
     knockback:20, desc:'武曲星远程：追踪龙音弹（8s/无限穿透/速度500+）',
     noPower:true,
     exclusiveName:'紫纹龙音',
@@ -1688,9 +1688,7 @@ function Player(heroKey){
   this.novaTimer = 0;
   this.hasteTimer = 0;
 
-  this.gravityPowBuff = 0;
-  this.gravitySpdBuff = 0;
-  this.gravityBuffTimer = 0;
+  this.gravityBuffs = [];
 
   this.damCap = h.damCap || 0.5;
   this.warlordDmgLevel = 0;
@@ -1776,9 +1774,9 @@ Player.prototype.getWeaponStats = function(wid){
   var indSpeedBonus = sumTierCounts(BASE_IND_SPEED, mod.speedCounts);
   var gloPowerBonus = sumTierCounts(BASE_GLOBAL_POWER, this.globalPowerCounts);
   var gloSpeedBonus = sumTierCounts(BASE_GLOBAL_SPEED, this.globalSpeedCounts);
-  if (this.gravityBuffTimer > 0){
-    gloPowerBonus += this.gravityPowBuff;
-    gloSpeedBonus += this.gravitySpdBuff;
+  for (var gi = 0; gi < this.gravityBuffs.length; gi++){
+    gloPowerBonus += this.gravityBuffs[gi].pct;
+    gloSpeedBonus += this.gravityBuffs[gi].pct;
   }
 
   var hasteMult = this.hasteTimer > 0 ? (rt._killHasteMult || 1.5) : 1;
@@ -1838,7 +1836,7 @@ Player.prototype.getWeaponStats = function(wid){
   if (w.kind === 'gravity' && rt._transcend === 'singularity') range *= 1.15;
 
   var slowPower = 0, slowDur = 0, stunDur = 0, burnDps = 0, burnDur = 0;
-  var healPct = 0, overflowPct = 0, buffDur = 0, gravBuffCap = 0.40;
+  var healPct = 0, overflowPct = 0, buffDur = 0;
   var flameLength = 0, flameWidth = 0, burnMaxStacks = 0;
   if (w.kind === 'frost'){
     slowPower = (w.slowBase || 0.35) + (rt._slowBonus || 0);
@@ -1866,11 +1864,10 @@ Player.prototype.getWeaponStats = function(wid){
     healPct = (w.healPct || 0.15) + (rt._healBonus || 0);
     overflowPct = (w.overflowPct || 0.12) + (rt._overflowBonus || 0);
     buffDur = (w.buffDur || 3.0) + (rt._buffDurBonus || 0);
-    gravBuffCap = 0.40 + (rt._gravBuffCap || 0);
     if (rt._transcend === 'singularity'){
       healPct += 0.05;
       overflowPct += 0.05;
-      buffDur += 2.0;
+      buffDur += 1.0;
     }
   }
 
@@ -1885,7 +1882,7 @@ Player.prototype.getWeaponStats = function(wid){
     slowPower:slowPower, slowDur:slowDur, stunDur:stunDur,
     burnDps:burnDps, burnDur:burnDur, burnMaxStacks:burnMaxStacks,
     flameLength:flameLength, flameWidth:flameWidth,
-    healPct:healPct, overflowPct:overflowPct, buffDur:buffDur, gravBuffCap:gravBuffCap,
+    healPct:healPct, overflowPct:overflowPct, buffDur:buffDur,
     overflowAmount:overflowAmount, overflowDmgMult:overflowDmgMult, overflowKbMult:overflowKbMult
   };
 };
@@ -2531,11 +2528,9 @@ function weaponAttack(g, wid){
     if (actualHealG > 0) p.hp += actualHealG;
     var overHealG = healAmtG - actualHealG;
     if (overHealG > 0){
-      var buffPctG = Math.min(stats.gravBuffCap, overHealG * stats.overflowPct * 0.004);
+      var buffPctG = overHealG * stats.overflowPct * 0.004;
       if (buffPctG > 0.005){
-        p.gravityPowBuff = Math.max(p.gravityPowBuff, buffPctG);
-        p.gravitySpdBuff = Math.max(p.gravitySpdBuff, buffPctG);
-        p.gravityBuffTimer = stats.buffDur;
+        p.gravityBuffs.push({ pct: buffPctG, timer: stats.buffDur });
       }
     }
   }
@@ -2554,7 +2549,7 @@ function weaponAttack(g, wid){
       radius:6, damage: stats.dmg + (rt._toxDmg||0), knockback: stats.knockback,
       hit:{}, life: tRange / w.projSpeed, color:'#5aff5a', kind:'toxin', src: wid,
       maxDist: tRange, dist: 0,
-      rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend, pierceMax: rt._transcend === 'toxinPierce' ? 20 : (w.toxPierce + (rt._toxPierce||0)) }
+      rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend, pierceMax: rt._transcend === 'toxinPierce' ? 5 : (w.toxPierce + (rt._toxPierce||0)) }
     });
   }
   else if (w.kind === 'judgment'){
@@ -3333,13 +3328,9 @@ function update(dt){
     p.powerBuffTimer -= dt;
     if (p.powerBuffTimer <= 0){ p.powerBuff = 0; p.powerBuffTimer = 0; }
   }
-  if (p.gravityBuffTimer > 0){
-    p.gravityBuffTimer -= dt;
-    if (p.gravityBuffTimer <= 0){
-      p.gravityBuffTimer = 0;
-      p.gravityPowBuff = 0;
-      p.gravitySpdBuff = 0;
-    }
+  for (var gbi = p.gravityBuffs.length - 1; gbi >= 0; gbi--){
+    p.gravityBuffs[gbi].timer -= dt;
+    if (p.gravityBuffs[gbi].timer <= 0) p.gravityBuffs.splice(gbi, 1);
   }
 
   var mx = 0, my = 0;
@@ -4264,7 +4255,7 @@ function updateBuffBar(){
   var html = '';
   if (p.hasteBuff > 0) html += '<div class="buff-item">⚡ +' + Math.round(p.hasteBuff*100) + '% <span style="color:#ffd76e">' + p.hasteBuffTimer.toFixed(1) + 's</span></div>';
   if (p.powerBuff > 0) html += '<div class="buff-item">💥 +' + Math.round(p.powerBuff*100) + '% <span style="color:#ffd76e">' + p.powerBuffTimer.toFixed(1) + 's</span></div>';
-  if (p.gravityBuffTimer > 0) html += '<div class="buff-item">🕳️ +' + Math.round(p.gravityPowBuff*100) + '% <span style="color:#c878ff">' + p.gravityBuffTimer.toFixed(1) + 's</span></div>';
+  if (p.gravityBuffs.length > 0){ var gTot=0,gMaxT=0; for(var gk=0;gk<p.gravityBuffs.length;gk++){gTot+=p.gravityBuffs[gk].pct;if(p.gravityBuffs[gk].timer>gMaxT)gMaxT=p.gravityBuffs[gk].timer;} html+='<div class="buff-item">🕳️ +'+Math.round(gTot*100)+'% <span style="color:#c878ff">'+gMaxT.toFixed(1)+'s</span></div>'; }
   el.innerHTML = html;
 }
 
@@ -4543,14 +4534,31 @@ function render(dt){
       ctx.fillStyle = '#fff0a0';
       ctx.beginPath(); ctx.arc(0, 0, radW*0.35, 0, Math.PI*2); ctx.fill();
     } else if (pr.kind === 'missile'){
+      ctx.translate(sP.x, sP.y);
+      var mAng = Math.atan2(pr.vy, pr.vx);
+      ctx.rotate(mAng);
+      if (pr.glowTrail){
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = '#c878ff';
+        ctx.beginPath(); ctx.arc(-12, 0, pr.radius*1.8, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.08;
+        ctx.beginPath(); ctx.arc(-24, 0, pr.radius*1.4, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       ctx.fillStyle = pr.color;
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.5;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*2.2, 0, Math.PI*2); ctx.fill();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*0.6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = pr.color;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-pr.radius*1.5, 0);
+      ctx.lineTo(pr.radius*1.5, 0);
+      ctx.stroke();
     } else {
       var angPr = Math.atan2(pr.vy, pr.vx);
       ctx.translate(sP.x, sP.y); ctx.rotate(angPr);
@@ -4584,6 +4592,10 @@ function render(dt){
     var sJ2 = worldToScreen(js2.x, js2.y);
     ctx.save();
     ctx.translate(sJ2.x, sJ2.y);
+    if (js2.phase === 'flying'){
+      var jAng = Math.atan2(js2.targetY - 60 - js2.y, js2.targetX - js2.x);
+      ctx.rotate(jAng + Math.PI * 0.5);
+    }
     // 光柱
     var glowGrad = ctx.createLinearGradient(0, -80, 0, 20);
     glowGrad.addColorStop(0, 'rgba(255,200,80,0)');
