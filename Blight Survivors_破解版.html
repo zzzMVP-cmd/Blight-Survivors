@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -2925,8 +2925,8 @@ function buildCandidatePool(g){
     if (!mod3) continue;
     if (!w3.noPower) pool.push({ type:'weapon_power', data:w3, wid:wid3, tier: rollTierWeighted() });
     pool.push({ type:'weapon_speed', data:w3, wid:wid3, tier: rollTierWeighted() });
-    if (!mod3.greatTranscend){
-      for (var st=0; st<4; st++){
+    if (!mod3.greatTranscend && w3.exclusiveStages && w3.exclusiveStages.length > 0){
+      for (var st=0; st<w3.exclusiveStages.length; st++){
         if (!mod3.miniTranscended[st]){
           pool.push({ type:'weapon_exclusive', data:w3, wid:wid3, stage:st, stageCount:mod3.exclusiveCounts[st] });
         }
