@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1048,6 +1048,17 @@ function sumTierCounts(base, counts){
   }
   return s;
 }
+function tierMult(base, counts){
+  var addSum = 0;
+  var caiCount = counts[3] || 0;
+  for (var t=0;t<3;t++){
+    var n = counts[t] || 0;
+    if (n > 0) addSum += tierValue(base, t) * n;
+  }
+  var result = 1 + addSum;
+  if (caiCount > 0) result *= Math.pow(1 + tierValue(base, 3), caiCount);
+  return result;
+}
 
 // ============================================================
 //  敌人种类定义
@@ -1143,7 +1154,7 @@ var BOSS_TYPE_ORDER = ['tank', 'speed', 'ranged'];
 var WEAPONS = {
   hero_melee_warrior: {
     id:'hero_melee_warrior', category:'hero', wtype:'attack', name:'裂地斩', icon:'⚔️',
-    kind:'melee', damage:14, atkSpeed:0.55, range:95, projSpeed:0,
+    kind:'melee', damage:16, atkSpeed:0.55, range:95, projSpeed:0,
     knockback: 34, desc:'战士专属：宽阔的近战挥砍',
     exclusiveName:'震荡波',
     exclusiveStages:[
@@ -1163,7 +1174,7 @@ var WEAPONS = {
   },
   hero_arrow_ranger: {
     id:'hero_arrow_ranger', category:'hero', wtype:'attack', name:'穿透箭', icon:'🏹',
-    kind:'arrow', damage:11, atkSpeed:0.42, range:340, projSpeed:520,
+    kind:'arrow', damage:13, atkSpeed:0.42, range:340, projSpeed:520,
     knockback: 18, desc:'游侠专属：高速远程箭矢',
     exclusiveName:'精准猎杀',
     exclusiveStages:[
@@ -1183,7 +1194,7 @@ var WEAPONS = {
   },
   hero_magic_mage: {
     id:'hero_magic_mage', category:'hero', wtype:'attack', name:'秘法弹', icon:'🔮',
-    kind:'magic', damage:22, atkSpeed:0.95, range:300, projSpeed:360,
+    kind:'magic', damage:24, atkSpeed:0.95, range:300, projSpeed:360,
     knockback: 26, desc:'法师专属：爆炸魔法弹',
     exclusiveName:'奥术回响',
     exclusiveStages:[
@@ -1203,7 +1214,7 @@ var WEAPONS = {
   },
   hero_melee_rogue: {
     id:'hero_melee_rogue', category:'hero', wtype:'attack', name:'影袭', icon:'🗡️',
-    kind:'melee', damage:8, atkSpeed:0.28, range:110, projSpeed:0,
+    kind:'melee', damage:10, atkSpeed:0.28, range:110, projSpeed:0,
     knockback: 14, desc:'刺客专属：极快的近战连击',
     speedCap: 6.0,
     exclusiveName:'影刃连击',
@@ -1224,7 +1235,7 @@ var WEAPONS = {
   },
   hero_melee_warlock: {
     id:'hero_melee_warlock', category:'hero', wtype:'attack', name:'烈焰喷涌', icon:'🔥',
-    kind:'flame', damage:6, atkSpeed:0.18, range:220, projSpeed:0,
+    kind:'flame', damage:10, atkSpeed:0.18, range:220, projSpeed:0,
     knockback: 4, desc:'术士专属：向最近目标喷射火焰流（高频低伤）',
     flameLength: 220, flameWidth: 26, burnBase: 1.5,
     speedCap: 6.0,
@@ -1246,7 +1257,7 @@ var WEAPONS = {
   },
   uni_boomerang: {
     id:'uni_boomerang', category:'universal', wtype:'attack', name:'回旋镖', icon:'↩',
-    kind:'boomerang', damage:10, atkSpeed:1.6, range:280, projSpeed:420,
+    kind:'boomerang', damage:12, atkSpeed:1.6, range:280, projSpeed:420,
     knockback: 40, desc:'飞出后返回，可多次命中',
     exclusiveName:'回旋风暴',
     exclusiveStages:[
@@ -1266,7 +1277,7 @@ var WEAPONS = {
   },
   uni_frost: {
     id:'uni_frost', category:'universal', wtype:'control', name:'寒冰碎片', icon:'❄️',
-    kind:'frost', damage:10, atkSpeed:1.0, range:300, projSpeed:380,
+    kind:'frost', damage:14, atkSpeed:1.0, range:300, projSpeed:380,
     knockback: 55, desc:'强击退，命中减速敌人，可吃力量加成',
     slowBase: 0.42, slowDurBase: 1.4,
     exclusiveName:'极寒领域',
@@ -1287,7 +1298,7 @@ var WEAPONS = {
   },
   uni_lightning: {
     id:'uni_lightning', category:'universal', wtype:'attack', name:'闪电链', icon:'⚡',
-    kind:'lightning', damage:14, atkSpeed:1.9, range:260, projSpeed:0,
+    kind:'lightning', damage:16, atkSpeed:1.9, range:260, projSpeed:0,
     knockback: 8, desc:'瞬间打击范围内敌人并眩晕',
     stunBase: 0.35,
     exclusiveName:'雷暴',
@@ -1308,7 +1319,7 @@ var WEAPONS = {
   },
   uni_firewhirl: {
     id:'uni_firewhirl', category:'universal', wtype:'attack', name:'火旋风', icon:'🌀',
-    kind:'firewhirl', damage:14, atkSpeed:1.4, range:260, projSpeed:140,
+    kind:'firewhirl', damage:16, atkSpeed:1.4, range:260, projSpeed:140,
     knockback: 28, desc:'向最近敌人射出火旋风，沿途击退并点燃（同一火旋风不重复叠层）',
     burnBase: 1.2, burnDur: 2.5,
     exclusiveName:'烈焰风暴',
@@ -1329,7 +1340,7 @@ var WEAPONS = {
   },
   uni_gravity: {
     id:'uni_gravity', category:'universal', wtype:'utility', name:'引力奇点', icon:'🕳️',
-    kind:'gravity', damage:8, atkSpeed:3.0, range:220, projSpeed:0,
+    kind:'gravity', damage:12, atkSpeed:3.0, range:220, projSpeed:0,
     knockback: 0, desc:'将大范围敌人拉向自身并造成伤害，按伤害回血，溢出治疗转为临时全体增益',
     healPct: 0.08, overflowPct: 0.18, buffDur: 3.0,
     exclusiveName:'万象引力',
@@ -1337,12 +1348,12 @@ var WEAPONS = {
       { name:'引力·虹吸', desc:'回血比例 +3%，溢出转化 +6%',
         apply:function(p,rt){ rt._healBonus = (rt._healBonus||0) + 0.03; rt._overflowBonus = (rt._overflowBonus||0) + 0.06; },
         miniTranscend:function(p,rt){ rt._healBonus = (rt._healBonus||0) + 0.04; rt._overflowBonus = (rt._overflowBonus||0) + 0.09; } },
-      { name:'引力·领域', desc:'范围 +15%，增益持续 +1.5 秒',
-        apply:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 1.5; },
-        miniTranscend:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 2.0; } },
-      { name:'引力·充盈', desc:'增益效果上限 +10%',
-        apply:function(p,rt){ rt._gravBuffCap = (rt._gravBuffCap||0) + 0.10; },
-        miniTranscend:function(p,rt){ rt._gravBuffCap = (rt._gravBuffCap||0) + 0.15; } },
+      { name:'引力·领域', desc:'范围 +15%，增益持续 +1.0 秒',
+        apply:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 1.0; },
+        miniTranscend:function(p,rt){ rt._rangeBonus = (rt._rangeBonus||0) + 0.15; rt._buffDurBonus = (rt._buffDurBonus||0) + 1.0; } },
+      { name:'引力·充盈', desc:'溢出转化率 +5%',
+        apply:function(p,rt){ rt._overflowBonus = (rt._overflowBonus||0) + 0.05; },
+        miniTranscend:function(p,rt){ rt._overflowBonus = (rt._overflowBonus||0) + 0.08; } },
       { name:'引力·奇点', desc:'伤害 +2，范围 +5%',
         apply:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 2; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; },
         miniTranscend:function(p,rt){ rt._gravDmg = (rt._gravDmg||0) + 4; rt._rangeBonus = (rt._rangeBonus||0) + 0.05; } }
@@ -1350,7 +1361,7 @@ var WEAPONS = {
   },
   uni_toxin: {
     id:'uni_toxin', category:'universal', wtype:'attack', name:'瘟疫之种', icon:'☠️',
-    kind:'toxin', damage:8, atkSpeed:3.0, range:320, projSpeed:350,
+    kind:'toxin', damage:12, atkSpeed:3.0, range:320, projSpeed:350,
     knockback:10, desc:'命中后留下毒圈，叠加剧毒印记，周期性百分比扣血',
     circleRBase:60, circleLife:5.0, markDmgPct:0.005, tickIntervalBase:3.0, toxPierce:1,
     exclusiveName:'剧毒绽放',
@@ -1371,9 +1382,9 @@ var WEAPONS = {
   },
   uni_judgment: {
     id:'uni_judgment', category:'universal', wtype:'终结', name:'裁决之剑', icon:'🗡',
-    kind:'judgment', damage:10, atkSpeed:3.5, range:2000, projSpeed:500,
+    kind:'judgment', damage:12, atkSpeed:3.5, range:2000, projSpeed:800,
     knockback:20, desc:'锁定低血量怪物，飞剑斩杀，路径伤害',
-    hpThreshold:6, swordSpeed:500, hoverTime:0.5, impactRadius:0,
+    hpThreshold:6, swordSpeed:800, hoverTime:0.5, impactRadius:0,
     exclusiveName:'天罚裁决',
     exclusiveStages:[
       { name:'裁决·阈值', desc:'斩杀血量阈值 +1%（最多10%）',
@@ -1392,7 +1403,7 @@ var WEAPONS = {
   },
   hero_melee_warlord: {
     id:'hero_melee_warlord', category:'hero', wtype:'attack', name:'龙音枪·近', icon:'🔱',
-    kind:'melee', damage:50, atkSpeed:0.30, range:140, projSpeed:0,
+    kind:'melee', damage:54, atkSpeed:0.30, range:140, projSpeed:0,
     knockback:35, desc:'武曲星近战：180°大扇形横扫',
     noPower:true,
     exclusiveName:'紫纹龙音',
@@ -1413,7 +1424,7 @@ var WEAPONS = {
   },
   hero_arrow_warlord: {
     id:'hero_arrow_warlord', category:'hero', wtype:'attack', name:'龙音枪·远', icon:'🎯',
-    kind:'missile', damage:40, atkSpeed:0.40, range:450, projSpeed:520,
+    kind:'missile', damage:42, atkSpeed:0.40, range:450, projSpeed:520,
     knockback:20, desc:'武曲星远程：追踪龙音弹（8s/无限穿透/速度500+）',
     noPower:true,
     exclusiveName:'紫纹龙音',
@@ -1688,9 +1699,7 @@ function Player(heroKey){
   this.novaTimer = 0;
   this.hasteTimer = 0;
 
-  this.gravityPowBuff = 0;
-  this.gravitySpdBuff = 0;
-  this.gravityBuffTimer = 0;
+  this.gravityBuffs = [];
 
   this.damCap = h.damCap || 0.5;
   this.warlordDmgLevel = 0;
@@ -1753,9 +1762,9 @@ Player.prototype.getTotalAttack = function(){
 };
 Player.prototype.getOrbRespawnTime = function(){
   if (this.orbitLevel === 0) return 999;
-  var globalSpeedBonus = sumTierCounts(BASE_GLOBAL_SPEED, this.globalSpeedCounts);
-  var orbSpeedBonus = sumTierCounts(ORB_SPEED_BASE, this.orbSpeedCounts);
-  var totalSpeed = (1 + globalSpeedBonus) * (1 + orbSpeedBonus);
+  var globalSpeedMult = tierMult(BASE_GLOBAL_SPEED, this.globalSpeedCounts);
+  var orbSpeedMult = tierMult(ORB_SPEED_BASE, this.orbSpeedCounts);
+  var totalSpeed = globalSpeedMult * orbSpeedMult;
   var t = ORB_BASE_RESPAWN / totalSpeed;
   return Math.max(0.6, t);
 };
@@ -1772,19 +1781,24 @@ Player.prototype.getWeaponStats = function(wid){
   var baseDmg = w.damage * (1 + (lv-1)*0.30);
   var baseAtkInterval = w.atkSpeed * Math.pow(0.90, lv-1);
 
-  var indPowerBonus = sumTierCounts(BASE_IND_POWER, mod.powerCounts);
-  var indSpeedBonus = sumTierCounts(BASE_IND_SPEED, mod.speedCounts);
-  var gloPowerBonus = sumTierCounts(BASE_GLOBAL_POWER, this.globalPowerCounts);
-  var gloSpeedBonus = sumTierCounts(BASE_GLOBAL_SPEED, this.globalSpeedCounts);
-  if (this.gravityBuffTimer > 0){
-    gloPowerBonus += this.gravityPowBuff;
-    gloSpeedBonus += this.gravitySpdBuff;
+  var indPowerMult = tierMult(BASE_IND_POWER, mod.powerCounts);
+  var indSpeedMult = tierMult(BASE_IND_SPEED, mod.speedCounts);
+  var gloPowerMult = tierMult(BASE_GLOBAL_POWER, this.globalPowerCounts);
+  var gloSpeedMult = tierMult(BASE_GLOBAL_SPEED, this.globalSpeedCounts);
+  var gravPowerMult = 1, gravSpeedMult = 1;
+  for (var gi = 0; gi < this.gravityBuffs.length; gi++){
+    gravPowerMult *= (1 + this.gravityBuffs[gi].pct);
+    gravSpeedMult *= (1 + this.gravityBuffs[gi].pct);
+  }
+  if (w.kind === 'gravity' && this.gravityBuffs.length > 0){
+    gravSpeedMult = 1;
+    gravPowerMult = 1 + (gravPowerMult - 1) * 0.5;
   }
 
   var hasteMult = this.hasteTimer > 0 ? (rt._killHasteMult || 1.5) : 1;
   hasteMult *= (1 + this.hasteBuff);
 
-  var rawSpeedMult = (1 + indSpeedBonus) * (1 + gloSpeedBonus) * hasteMult;
+  var rawSpeedMult = indSpeedMult * gloSpeedMult * gravSpeedMult * hasteMult;
 
   var overflowAmount = 0, overflowDmgMult = 1, overflowKbMult = 1;
   var totalSpeedMult = rawSpeedMult;
@@ -1792,7 +1806,7 @@ Player.prototype.getWeaponStats = function(wid){
     var capMult = 1 + w.speedCap;
     if (rawSpeedMult > capMult){
       overflowAmount = rawSpeedMult - capMult;
-      overflowDmgMult = 1 + overflowAmount * OVERFLOW_DMG_PER_UNIT;
+      overflowDmgMult = 1 + overflowAmount / capMult;
       overflowKbMult = 1 + overflowAmount * OVERFLOW_KB_PER_UNIT;
       totalSpeedMult = capMult;
     }
@@ -1801,16 +1815,16 @@ Player.prototype.getWeaponStats = function(wid){
     if (atkIntervalRaw < ATK_INTERVAL_FLOOR){
       var capMult2 = baseAtkInterval / ATK_INTERVAL_FLOOR;
       overflowAmount = rawSpeedMult - capMult2;
-      overflowDmgMult = 1 + overflowAmount * OVERFLOW_DMG_PER_UNIT;
+      overflowDmgMult = 1 + overflowAmount / capMult2;
       overflowKbMult = 1 + overflowAmount * OVERFLOW_KB_PER_UNIT;
       totalSpeedMult = capMult2;
     }
   }
 
-  var dmgMult = (1 + indPowerBonus) * (1 + gloPowerBonus);
+  var dmgMult = indPowerMult * gloPowerMult * gravPowerMult;
   if (w.noPower) dmgMult = 1;
-  else if (w.wtype === 'control') dmgMult = (1 + indPowerBonus*0.3) * (1 + gloPowerBonus*0.3);
-  else if (w.wtype === 'utility') dmgMult = (1 + indPowerBonus*0.5) * (1 + gloPowerBonus*0.5);
+  else if (w.wtype === 'control') dmgMult = (1 + (indPowerMult-1)*0.3) * (1 + (gloPowerMult-1)*0.3) * (1 + (gravPowerMult-1)*0.3);
+  else if (w.wtype === 'utility') dmgMult = (1 + (indPowerMult-1)*0.5) * (1 + (gloPowerMult-1)*0.5) * (1 + (gravPowerMult-1)*0.5);
   dmgMult *= overflowDmgMult;
   dmgMult *= (1 + this.powerBuff);
 
@@ -1838,7 +1852,7 @@ Player.prototype.getWeaponStats = function(wid){
   if (w.kind === 'gravity' && rt._transcend === 'singularity') range *= 1.15;
 
   var slowPower = 0, slowDur = 0, stunDur = 0, burnDps = 0, burnDur = 0;
-  var healPct = 0, overflowPct = 0, buffDur = 0, gravBuffCap = 0.40;
+  var healPct = 0, overflowPct = 0, buffDur = 0;
   var flameLength = 0, flameWidth = 0, burnMaxStacks = 0;
   if (w.kind === 'frost'){
     slowPower = (w.slowBase || 0.35) + (rt._slowBonus || 0);
@@ -1866,11 +1880,10 @@ Player.prototype.getWeaponStats = function(wid){
     healPct = (w.healPct || 0.15) + (rt._healBonus || 0);
     overflowPct = (w.overflowPct || 0.12) + (rt._overflowBonus || 0);
     buffDur = (w.buffDur || 3.0) + (rt._buffDurBonus || 0);
-    gravBuffCap = 0.40 + (rt._gravBuffCap || 0);
     if (rt._transcend === 'singularity'){
       healPct += 0.05;
       overflowPct += 0.05;
-      buffDur += 2.0;
+      buffDur += 1.0;
     }
   }
 
@@ -1885,7 +1898,7 @@ Player.prototype.getWeaponStats = function(wid){
     slowPower:slowPower, slowDur:slowDur, stunDur:stunDur,
     burnDps:burnDps, burnDur:burnDur, burnMaxStacks:burnMaxStacks,
     flameLength:flameLength, flameWidth:flameWidth,
-    healPct:healPct, overflowPct:overflowPct, buffDur:buffDur, gravBuffCap:gravBuffCap,
+    healPct:healPct, overflowPct:overflowPct, buffDur:buffDur,
     overflowAmount:overflowAmount, overflowDmgMult:overflowDmgMult, overflowKbMult:overflowKbMult
   };
 };
@@ -2531,11 +2544,9 @@ function weaponAttack(g, wid){
     if (actualHealG > 0) p.hp += actualHealG;
     var overHealG = healAmtG - actualHealG;
     if (overHealG > 0){
-      var buffPctG = Math.min(stats.gravBuffCap, overHealG * stats.overflowPct * 0.004);
+      var buffPctG = overHealG * stats.overflowPct * 0.004;
       if (buffPctG > 0.005){
-        p.gravityPowBuff = Math.max(p.gravityPowBuff, buffPctG);
-        p.gravitySpdBuff = Math.max(p.gravitySpdBuff, buffPctG);
-        p.gravityBuffTimer = stats.buffDur;
+        p.gravityBuffs.push({ pct: buffPctG, timer: stats.buffDur });
       }
     }
   }
@@ -2554,7 +2565,7 @@ function weaponAttack(g, wid){
       radius:6, damage: stats.dmg + (rt._toxDmg||0), knockback: stats.knockback,
       hit:{}, life: tRange / w.projSpeed, color:'#5aff5a', kind:'toxin', src: wid,
       maxDist: tRange, dist: 0,
-      rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend, pierceMax: rt._transcend === 'toxinPierce' ? 20 : (w.toxPierce + (rt._toxPierce||0)) }
+      rt: { circleR: tCircleR, circleLife: w.circleLife, markCap: tMarkCap, transcend: rt._transcend, pierceMax: rt._transcend === 'toxinPierce' ? 5 : (w.toxPierce + (rt._toxPierce||0)) }
     });
   }
   else if (w.kind === 'judgment'){
@@ -2930,8 +2941,8 @@ function buildCandidatePool(g){
     if (!mod3) continue;
     if (!w3.noPower) pool.push({ type:'weapon_power', data:w3, wid:wid3, tier: rollTierWeighted() });
     pool.push({ type:'weapon_speed', data:w3, wid:wid3, tier: rollTierWeighted() });
-    if (!mod3.greatTranscend){
-      for (var st=0; st<4; st++){
+    if (!mod3.greatTranscend && w3.exclusiveStages && w3.exclusiveStages.length > 0){
+      for (var st=0; st<w3.exclusiveStages.length; st++){
         if (!mod3.miniTranscended[st]){
           pool.push({ type:'weapon_exclusive', data:w3, wid:wid3, stage:st, stageCount:mod3.exclusiveCounts[st] });
         }
@@ -2994,27 +3005,27 @@ function applyUpgradeChoice(g, choice){
   else if (choice.type === 'global_power'){
     var t = choice.tier;
     p.globalPowerCounts[t] = (p.globalPowerCounts[t] || 0) + 1;
-    toast('🔥 全体力量 +' + TIER_NAMES[t] + ' (+' + Math.round(tierValue(BASE_GLOBAL_POWER, t)*100) + '%) → 总 +' + Math.round(sumTierCounts(BASE_GLOBAL_POWER, p.globalPowerCounts)*100) + '%');
+    toast('🔥 全体力量 +' + TIER_NAMES[t] + ' (+' + Math.round(tierValue(BASE_GLOBAL_POWER, t)*100) + '%) → ' + tierMult(BASE_GLOBAL_POWER, p.globalPowerCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'global_speed'){
     var t2 = choice.tier;
     p.globalSpeedCounts[t2] = (p.globalSpeedCounts[t2] || 0) + 1;
-    toast('💨 全体速度 +' + TIER_NAMES[t2] + ' (+' + Math.round(tierValue(BASE_GLOBAL_SPEED, t2)*100) + '%) → 总 +' + Math.round(sumTierCounts(BASE_GLOBAL_SPEED, p.globalSpeedCounts)*100) + '%');
+    toast('💨 全体速度 +' + TIER_NAMES[t2] + ' (+' + Math.round(tierValue(BASE_GLOBAL_SPEED, t2)*100) + '%) → ' + tierMult(BASE_GLOBAL_SPEED, p.globalSpeedCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'orb_speed'){
     var t5 = choice.tier;
     p.orbSpeedCounts[t5] = (p.orbSpeedCounts[t5] || 0) + 1;
-    toast('💠 光球速度 +' + TIER_NAMES[t5] + ' (+' + Math.round(tierValue(ORB_SPEED_BASE, t5)*100) + '%) → 总 +' + Math.round(sumTierCounts(ORB_SPEED_BASE, p.orbSpeedCounts)*100) + '%');
+    toast('💠 光球速度 +' + TIER_NAMES[t5] + ' (+' + Math.round(tierValue(ORB_SPEED_BASE, t5)*100) + '%) → ' + tierMult(ORB_SPEED_BASE, p.orbSpeedCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'nova_power'){
     var t7 = choice.tier;
     p.novaPowerCounts[t7] = (p.novaPowerCounts[t7] || 0) + 1;
-    toast('💠 新星力量 +' + TIER_NAMES[t7] + ' (+' + Math.round(tierValue(NOVA_POWER_BASE, t7)*100) + '%) → 总 +' + Math.round(sumTierCounts(NOVA_POWER_BASE, p.novaPowerCounts)*100) + '%');
+    toast('💠 新星力量 +' + TIER_NAMES[t7] + ' (+' + Math.round(tierValue(NOVA_POWER_BASE, t7)*100) + '%) → ' + tierMult(NOVA_POWER_BASE, p.novaPowerCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'nova_speed'){
     var t8 = choice.tier;
     p.novaSpeedCounts[t8] = (p.novaSpeedCounts[t8] || 0) + 1;
-    toast('💠 新星速度 +' + TIER_NAMES[t8] + ' (+' + Math.round(tierValue(NOVA_SPEED_BASE, t8)*100) + '%) → 总 +' + Math.round(sumTierCounts(NOVA_SPEED_BASE, p.novaSpeedCounts)*100) + '%');
+    toast('💠 新星速度 +' + TIER_NAMES[t8] + ' (+' + Math.round(tierValue(NOVA_SPEED_BASE, t8)*100) + '%) → ' + tierMult(NOVA_SPEED_BASE, p.novaSpeedCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'weapon_new'){
     var w = choice.data;
@@ -3333,13 +3344,9 @@ function update(dt){
     p.powerBuffTimer -= dt;
     if (p.powerBuffTimer <= 0){ p.powerBuff = 0; p.powerBuffTimer = 0; }
   }
-  if (p.gravityBuffTimer > 0){
-    p.gravityBuffTimer -= dt;
-    if (p.gravityBuffTimer <= 0){
-      p.gravityBuffTimer = 0;
-      p.gravityPowBuff = 0;
-      p.gravitySpdBuff = 0;
-    }
+  for (var gbi = p.gravityBuffs.length - 1; gbi >= 0; gbi--){
+    p.gravityBuffs[gbi].timer -= dt;
+    if (p.gravityBuffs[gbi].timer <= 0) p.gravityBuffs.splice(gbi, 1);
   }
 
   var mx = 0, my = 0;
@@ -3452,10 +3459,10 @@ function update(dt){
     p.novaTimer -= dt;
     if (p.novaTimer <= 0){
       var baseInterval = Math.max(1.6, 3.5 - p.novaLevel*0.35);
-      var novaSpeedBonus = sumTierCounts(NOVA_SPEED_BASE, p.novaSpeedCounts);
-      p.novaTimer = baseInterval / (1 + novaSpeedBonus);
-      var novaPowerBonus = sumTierCounts(NOVA_POWER_BASE, p.novaPowerCounts);
-      var novaDmg = 20 * (1 + novaPowerBonus);
+      var novaSpeedMult = tierMult(NOVA_SPEED_BASE, p.novaSpeedCounts);
+      p.novaTimer = baseInterval / novaSpeedMult;
+      var novaPowerMult = tierMult(NOVA_POWER_BASE, p.novaPowerCounts);
+      var novaDmg = 20 * novaPowerMult;
       var radius = 110 + p.novaLevel*35;
       g.novae.push({ x:p.x, y:p.y, radius:0, maxRadius:radius, life:0.5, maxLife:0.5, color:'#a8e8ff' });
       var _prevSrc = g._dmgSource;
@@ -4264,7 +4271,7 @@ function updateBuffBar(){
   var html = '';
   if (p.hasteBuff > 0) html += '<div class="buff-item">⚡ +' + Math.round(p.hasteBuff*100) + '% <span style="color:#ffd76e">' + p.hasteBuffTimer.toFixed(1) + 's</span></div>';
   if (p.powerBuff > 0) html += '<div class="buff-item">💥 +' + Math.round(p.powerBuff*100) + '% <span style="color:#ffd76e">' + p.powerBuffTimer.toFixed(1) + 's</span></div>';
-  if (p.gravityBuffTimer > 0) html += '<div class="buff-item">🕳️ +' + Math.round(p.gravityPowBuff*100) + '% <span style="color:#c878ff">' + p.gravityBuffTimer.toFixed(1) + 's</span></div>';
+  if (p.gravityBuffs.length > 0){ var gTot=0,gMaxT=0; for(var gk=0;gk<p.gravityBuffs.length;gk++){gTot+=p.gravityBuffs[gk].pct;if(p.gravityBuffs[gk].timer>gMaxT)gMaxT=p.gravityBuffs[gk].timer;} html+='<div class="buff-item">🕳️ +'+Math.round(gTot*100)+'% <span style="color:#c878ff">'+gMaxT.toFixed(1)+'s</span></div>'; }
   el.innerHTML = html;
 }
 
@@ -4543,14 +4550,31 @@ function render(dt){
       ctx.fillStyle = '#fff0a0';
       ctx.beginPath(); ctx.arc(0, 0, radW*0.35, 0, Math.PI*2); ctx.fill();
     } else if (pr.kind === 'missile'){
+      ctx.translate(sP.x, sP.y);
+      var mAng = Math.atan2(pr.vy, pr.vx);
+      ctx.rotate(mAng);
+      if (pr.glowTrail){
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = '#c878ff';
+        ctx.beginPath(); ctx.arc(-12, 0, pr.radius*1.8, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.08;
+        ctx.beginPath(); ctx.arc(-24, 0, pr.radius*1.4, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       ctx.fillStyle = pr.color;
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.5;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*2.2, 0, Math.PI*2); ctx.fill();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.arc(0, 0, pr.radius*0.6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = pr.color;
       ctx.beginPath(); ctx.arc(0, 0, pr.radius, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-pr.radius*1.5, 0);
+      ctx.lineTo(pr.radius*1.5, 0);
+      ctx.stroke();
     } else {
       var angPr = Math.atan2(pr.vy, pr.vx);
       ctx.translate(sP.x, sP.y); ctx.rotate(angPr);
@@ -4584,6 +4608,10 @@ function render(dt){
     var sJ2 = worldToScreen(js2.x, js2.y);
     ctx.save();
     ctx.translate(sJ2.x, sJ2.y);
+    if (js2.phase === 'flying'){
+      var jAng = Math.atan2(js2.targetY - 60 - js2.y, js2.targetX - js2.x);
+      ctx.rotate(jAng + Math.PI * 0.5);
+    }
     // 光柱
     var glowGrad = ctx.createLinearGradient(0, -80, 0, 20);
     glowGrad.addColorStop(0, 'rgba(255,200,80,0)');
@@ -4594,15 +4622,18 @@ function render(dt){
     // 剑身
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.moveTo(0, -22); ctx.lineTo(5, -10); ctx.lineTo(3, -6);
-    ctx.lineTo(8, -2); ctx.lineTo(0, 6);
-    ctx.lineTo(-8, -2); ctx.lineTo(-3, -6); ctx.lineTo(-5, -10);
+    ctx.moveTo(0, -36); ctx.lineTo(7, -18); ctx.lineTo(5, -10);
+    ctx.lineTo(12, -3); ctx.lineTo(0, 10);
+    ctx.lineTo(-12, -3); ctx.lineTo(-5, -10); ctx.lineTo(-7, -18);
     ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#ffd76e';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
     // 剑柄
     ctx.fillStyle = '#ffe0a0';
-    ctx.fillRect(-2, 6, 4, 8);
+    ctx.fillRect(-2, 10, 4, 10);
     ctx.fillStyle = '#ffd76e';
-    ctx.fillRect(-4, 14, 8, 2);
+    ctx.fillRect(-5, 20, 10, 3);
     ctx.restore();
   }
 
@@ -5165,14 +5196,14 @@ function drawWeaponBar(g){
     else ctx.fillText('Lv.'+lv, x+size/2, y+size-8);
 
     if (mod){
-      var indP = sumTierCounts(BASE_IND_POWER, mod.powerCounts);
-      var indS = sumTierCounts(BASE_IND_SPEED, mod.speedCounts);
-      if (indP > 0 || indS > 0){
+      var indP = tierMult(BASE_IND_POWER, mod.powerCounts);
+      var indS = tierMult(BASE_IND_SPEED, mod.speedCounts);
+      if (indP > 1 || indS > 1){
         ctx.font = 'bold 8px "Segoe UI",sans-serif';
         ctx.fillStyle = '#ff8a6a';
-        if (indP > 0) ctx.fillText('+'+Math.round(indP*100)+'%', x+size/4, y - 22);
+        if (indP > 1) ctx.fillText((indP).toFixed(1)+'x', x+size/4, y - 22);
         ctx.fillStyle = '#7ee08a';
-        if (indS > 0) ctx.fillText('+'+Math.round(indS*100)+'%', x+size*3/4, y - 22);
+        if (indS > 1) ctx.fillText((indS).toFixed(1)+'x', x+size*3/4, y - 22);
       }
       var miniCount = p.countMiniTranscended(wid);
       if (miniCount > 0){
@@ -5249,10 +5280,12 @@ function tierCellsHtml(counts){
 }
 function tierCountRow(label, counts, base, type){
   var total = sumTierCounts(base, counts);
+  var mult = tierMult(base, counts);
+  var valStr = mult > 1 ? mult.toFixed(1)+'x' : '—';
   return '<div class="dp-bar-row">' +
     '<div class="dp-bar-label">'+label+'</div>' +
     tierCellsHtml(counts) +
-    '<div class="dp-bar-val '+type+'">'+(total>0 ? '+'+Math.round(total*100)+'%' : '—')+'</div>' +
+    '<div class="dp-bar-val '+type+'">'+valStr+'</div>' +
   '</div>';
 }
 function exclusiveRow(wid, p){
@@ -5292,13 +5325,13 @@ function buildDetailContent(){
   }
 
   if (p.novaLevel > 0){
-    var novaPowerBonus = sumTierCounts(NOVA_POWER_BASE, p.novaPowerCounts);
-    var novaSpeedBonus = sumTierCounts(NOVA_SPEED_BASE, p.novaSpeedCounts);
+    var novaPowerMult = tierMult(NOVA_POWER_BASE, p.novaPowerCounts);
+    var novaSpeedMult = tierMult(NOVA_SPEED_BASE, p.novaSpeedCounts);
     var baseInterval = Math.max(1.6, 3.5 - p.novaLevel*0.35);
-    var actualInterval = baseInterval / (1 + novaSpeedBonus);
+    var actualInterval = baseInterval / novaSpeedMult;
     html.push('<div class="dp-section"><h3>霜爆新星</h3><div class="dp-grid">');
     html.push('<div class="dp-item highlight"><div class="dp-item-top"><div class="dp-item-name">💠 霜爆新星 Lv.'+p.novaLevel+'</div><div class="dp-item-badge orb">攻击</div></div>' +
-      '<div class="dp-note">伤害：<b style="color:#a8e8ff">'+Math.round(20 * (1 + novaPowerBonus))+'</b><br>' +
+      '<div class="dp-note">伤害：<b style="color:#a8e8ff">'+Math.round(20 * novaPowerMult)+'</b><br>' +
       '半径：<b style="color:#a8e8ff">'+Math.round(110 + p.novaLevel*35)+'</b><br>' +
       '触发间隔：<b style="color:#a8e8ff">'+actualInterval.toFixed(2)+'s</b></div></div>');
     html.push('<div class="dp-item"><div class="dp-item-top"><div class="dp-item-name">💪 新星力量</div><div class="dp-item-badge orb">独立乘区</div></div>' +
