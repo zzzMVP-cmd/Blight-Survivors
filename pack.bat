@@ -2,7 +2,7 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 
-set VERSION=v1.3.4
+set VERSION=v1.3.5
 set PACK_DIR=packed
 if not exist "%PACK_DIR%" mkdir "%PACK_DIR%"
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -342,6 +342,10 @@
     75% { transform: rotate(0deg); }
   }
   body.touch.portrait #landscapeHint { display:flex; }
+  body.touch.portrait #landscapeHint.dismissed { display:none; }
+  #landscapeHint .lh-sub {
+    font-size:12px; color:#7a7a92; letter-spacing:1px;
+  }
   #detailPanel {
     position:fixed; inset:0; z-index:15;
     display:none;
@@ -568,7 +572,7 @@
 <div id="toast"></div>
 <div id="joystick"><div id="joystickKnob"></div></div>
 <div id="touchPauseBtn">⏸</div>
-<div id="landscapeHint"><div class="lh-icon">📱</div><div>请将手机横屏以获得最佳体验</div></div>
+<div id="landscapeHint"><div class="lh-icon">📱</div><div>请将手机横屏以获得最佳体验</div><div class="lh-sub">3 秒后自动关闭 · 点击可立即继续</div></div>
 <div id="hintBar"><kbd>1-8</kbd> 道具 · <kbd>Tab</kbd> 详情 · <kbd>E</kbd> 伤害 · <kbd>ESC</kbd> 暂停</div>
 <div id="zoomIndicator">缩放: <span id="zoomVal">1.0x</span></div>
 <div id="transcendBanner">
@@ -1634,14 +1638,69 @@ document.addEventListener('touchend', function(e){
 }, {passive:true});
 if (isTouchDevice) document.body.classList.add('touch');
 
-function checkOrientation(){
-  if (!isTouchDevice) return;
-  var portrait = window.innerHeight > window.innerWidth * 1.2;
-  if (portrait) document.body.classList.add('portrait');
-  else document.body.classList.remove('portrait');
+var landscapeHintEl = document.getElementById('landscapeHint');
+var landscapeDismissed = false;
+var landscapeTimer = null;
+
+function dismissLandscapeHint(){
+  if (landscapeDismissed) return;
+  landscapeDismissed = true;
+  if (landscapeTimer){ clearTimeout(landscapeTimer); landscapeTimer = null; }
+  if (landscapeHintEl) landscapeHintEl.classList.add('dismissed');
 }
+
+function calcPortrait(){
+  var w = window.innerWidth || document.documentElement.clientWidth || 0;
+  var h = window.innerHeight || document.documentElement.clientHeight || 0;
+  if (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number'){
+    var ang = window.screen.orientation.angle;
+    if (ang === 90 || ang === 270) return false;
+    if (ang === 0 || ang === 180) return h > w;
+  }
+  if (w > 0 && h > 0) return h > w;
+  return false;
+}
+
+function checkOrientation(){
+  if (!isTouchDevice){ document.body.classList.remove('portrait'); return; }
+  if (calcPortrait()){
+    document.body.classList.add('portrait');
+    if (!landscapeDismissed && !landscapeTimer){
+      landscapeTimer = setTimeout(dismissLandscapeHint, 3000);
+    }
+  } else {
+    document.body.classList.remove('portrait');
+    if (landscapeTimer && !landscapeDismissed){ clearTimeout(landscapeTimer); landscapeTimer = null; }
+  }
+}
+
 checkOrientation();
-window.addEventListener('orientationchange', function(){ setTimeout(checkOrientation, 300); });
+window.addEventListener('resize', function(){ checkOrientation(); });
+window.addEventListener('orientationchange', function(){
+  checkOrientation();
+  setTimeout(checkOrientation, 150);
+  setTimeout(checkOrientation, 400);
+  setTimeout(checkOrientation, 900);
+});
+if (window.screen && window.screen.orientation && window.screen.orientation.addEventListener){
+  window.screen.orientation.addEventListener('change', checkOrientation);
+}
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', checkOrientation);
+}
+setInterval(checkOrientation, 500);
+
+if (landscapeHintEl){
+  landscapeHintEl.addEventListener('touchstart', function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    dismissLandscapeHint();
+  }, {passive:false});
+  landscapeHintEl.addEventListener('mousedown', function(e){
+    e.stopPropagation();
+    dismissLandscapeHint();
+  });
+}
 
 var cam = { x:0, y:0 };
 function worldToScreen(x,y){

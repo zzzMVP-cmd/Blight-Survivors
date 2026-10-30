@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.5
+
+### 横屏提示修复
+- **修复横屏后提示卡死**：部分浏览器（微信 / QQ 内置 WebView、部分安卓浏览器）不触发 `orientationchange`，导致横屏后提示层一直遮住游戏
+- **多信号检测**：同时监听 `resize`、`orientationchange`（含 150 / 400 / 900ms 多次延时复查）、`screen.orientation.change`、`visualViewport.resize`，并每 500ms 轮询一次兜底
+- **更可靠的判定**：优先使用 `screen.orientation.angle`（90 / 270 直接判定为横屏），无该 API 时回退到宽高比较（`innerHeight > innerWidth`，不再用 1.2 倍阈值）
+- **3 秒自动关闭**：竖屏提示显示 3 秒后自动消失，点击提示层也可立即关闭；关闭后本局不再弹出
+- **提示文案**：新增「3 秒后自动关闭 · 点击可立即继续」说明
+
 ## v1.3.4
 
 ### 紧急修复
