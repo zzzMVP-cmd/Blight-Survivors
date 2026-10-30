@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1059,6 +1059,11 @@ function tierMult(base, counts){
   if (caiCount > 0) result *= Math.pow(1 + tierValue(base, 3), caiCount);
   return result;
 }
+function tierMultAfter(base, counts, tier){
+  var c = {0:counts[0] || 0, 1:counts[1] || 0, 2:counts[2] || 0, 3:counts[3] || 0};
+  c[tier] = (c[tier] || 0) + 1;
+  return tierMult(base, c);
+}
 
 // ============================================================
 //  敌人种类定义
@@ -1830,6 +1835,8 @@ Player.prototype.getWeaponStats = function(wid){
 
   var dmg = baseDmg * dmgMult;
 
+  var burnPowerMult = 1 + (indPowerMult * gloPowerMult - 1) * 0.5;
+
   if (w.kind === 'flame' && rt._dmgBonus) dmg += rt._dmgBonus;
   if (w.kind === 'firewhirl' && rt._whirlDmg) dmg += rt._whirlDmg;
   if (w.kind === 'gravity' && rt._gravDmg) dmg += rt._gravDmg;
@@ -1860,7 +1867,7 @@ Player.prototype.getWeaponStats = function(wid){
   }
   if (w.kind === 'lightning') stunDur = (w.stunBase || 0.35) + (rt._stunBonus || 0);
   if (w.kind === 'flame'){
-    burnDps = (w.burnBase || 2) * (1 + (indPowerBonus + gloPowerBonus)*0.5);
+    burnDps = (w.burnBase || 2) * burnPowerMult;
     burnDur = 3;
     burnMaxStacks = (rt._burnStacksBonus || 0) + 1;
     if (rt._transcend === 'fireTornado'){
@@ -1872,7 +1879,7 @@ Player.prototype.getWeaponStats = function(wid){
     }
   }
   if (w.kind === 'firewhirl'){
-    burnDps = (w.burnBase || 1.2) * (1 + (indPowerBonus + gloPowerBonus)*0.5);
+    burnDps = (w.burnBase || 1.2) * burnPowerMult;
     burnDur = (w.burnDur || 2.5) + (rt._burnDurBonus || 0);
     burnMaxStacks = (rt._burnStacksBonus || 0) + 1;
   }
@@ -1892,8 +1899,8 @@ Player.prototype.getWeaponStats = function(wid){
   return {
     w:w, lv:lv, mod:mod, dmg:dmg, atkInterval:atkInterval, range:range,
     knockback: finalKnockback,
-    indPowerBonus:indPowerBonus, indSpeedBonus:indSpeedBonus,
-    gloPowerBonus:gloPowerBonus, gloSpeedBonus:gloSpeedBonus,
+    indPowerMult:indPowerMult, indSpeedMult:indSpeedMult,
+    gloPowerMult:gloPowerMult, gloSpeedMult:gloSpeedMult,
     hasteMult:hasteMult,
     slowPower:slowPower, slowDur:slowDur, stunDur:stunDur,
     burnDps:burnDps, burnDur:burnDur, burnMaxStacks:burnMaxStacks,
@@ -3044,14 +3051,14 @@ function applyUpgradeChoice(g, choice){
     var mod3 = p.weaponMods[choice.wid];
     var t3 = choice.tier;
     mod3.powerCounts[t3] = (mod3.powerCounts[t3] || 0) + 1;
-    toast(w3.icon + ' ' + w3.name + ' 力量 +' + TIER_NAMES[t3] + ' → 总 +' + Math.round(sumTierCounts(BASE_IND_POWER, mod3.powerCounts)*100) + '%');
+    toast(w3.icon + ' ' + w3.name + ' 力量 +' + TIER_NAMES[t3] + ' → ' + tierMult(BASE_IND_POWER, mod3.powerCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'weapon_speed'){
     var w4 = choice.data;
     var mod4 = p.weaponMods[choice.wid];
     var t4 = choice.tier;
     mod4.speedCounts[t4] = (mod4.speedCounts[t4] || 0) + 1;
-    toast(w4.icon + ' ' + w4.name + ' 速度 +' + TIER_NAMES[t4] + ' → 总 +' + Math.round(sumTierCounts(BASE_IND_SPEED, mod4.speedCounts)*100) + '%');
+    toast(w4.icon + ' ' + w4.name + ' 速度 +' + TIER_NAMES[t4] + ' → ' + tierMult(BASE_IND_SPEED, mod4.speedCounts).toFixed(1) + 'x');
   }
   else if (choice.type === 'weapon_exclusive'){
     var w5 = choice.data;
@@ -3166,56 +3173,56 @@ function renderChoices(){
       else if (choice.type === 'global_power'){
         var t = choice.tier;
         var val = tierValue(BASE_GLOBAL_POWER, t);
-        var cur = sumTierCounts(BASE_GLOBAL_POWER, p.globalPowerCounts);
+        var next = tierMultAfter(BASE_GLOBAL_POWER, p.globalPowerCounts, t);
         var badge = '<span class="tier-badge '+TIER_CLASSES[t]+'">'+TIER_NAMES[t]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t]);
         html = '<div class="upgrade-tag global">全体力量</div><div class="upgrade-icon">🔥</div>' +
           '<div class="upgrade-name">全体力量 '+badge+'</div>' +
-          '<div class="upgrade-desc">+'+Math.round(val*100)+'% → 总 <b>+'+Math.round((cur+val)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">+'+Math.round(val*100)+'% → 总 <b>×'+next.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'global_speed'){
         var t2 = choice.tier;
         var val2 = tierValue(BASE_GLOBAL_SPEED, t2);
-        var cur2 = sumTierCounts(BASE_GLOBAL_SPEED, p.globalSpeedCounts);
+        var next2 = tierMultAfter(BASE_GLOBAL_SPEED, p.globalSpeedCounts, t2);
         var badge2 = '<span class="tier-badge '+TIER_CLASSES[t2]+'">'+TIER_NAMES[t2]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t2]);
         html = '<div class="upgrade-tag global">全体速度</div><div class="upgrade-icon">💨</div>' +
           '<div class="upgrade-name">全体速度 '+badge2+'</div>' +
-          '<div class="upgrade-desc">+'+Math.round(val2*100)+'% → 总 <b>+'+Math.round((cur2+val2)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">+'+Math.round(val2*100)+'% → 总 <b>×'+next2.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'orb_speed'){
         var t6 = choice.tier;
         var val6 = tierValue(ORB_SPEED_BASE, t6);
-        var cur6 = sumTierCounts(ORB_SPEED_BASE, p.orbSpeedCounts);
+        var next6 = tierMultAfter(ORB_SPEED_BASE, p.orbSpeedCounts, t6);
         var badge6 = '<span class="tier-badge '+TIER_CLASSES[t6]+'">'+TIER_NAMES[t6]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t6]);
         html = '<div class="upgrade-tag orb">光球速度</div><div class="upgrade-icon">💠</div>' +
           '<div class="upgrade-name">光球速度 '+badge6+'</div>' +
-          '<div class="upgrade-desc">+'+Math.round(val6*100)+'% → 总 <b>+'+Math.round((cur6+val6)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">+'+Math.round(val6*100)+'% → 总 <b>×'+next6.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'nova_power'){
         var t9 = choice.tier;
         var val9 = tierValue(NOVA_POWER_BASE, t9);
-        var cur9 = sumTierCounts(NOVA_POWER_BASE, p.novaPowerCounts);
+        var next9 = tierMultAfter(NOVA_POWER_BASE, p.novaPowerCounts, t9);
         var badge9 = '<span class="tier-badge '+TIER_CLASSES[t9]+'">'+TIER_NAMES[t9]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t9]);
         html = '<div class="upgrade-tag orb">新星力量</div><div class="upgrade-icon">💠</div>' +
           '<div class="upgrade-name">霜爆新星 · 力量 '+badge9+'</div>' +
-          '<div class="upgrade-desc">新星伤害 +'+Math.round(val9*100)+'% → 总 <b>+'+Math.round((cur9+val9)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">新星伤害 +'+Math.round(val9*100)+'% → 总 <b>×'+next9.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'nova_speed'){
         var t10 = choice.tier;
         var val10 = tierValue(NOVA_SPEED_BASE, t10);
-        var cur10 = sumTierCounts(NOVA_SPEED_BASE, p.novaSpeedCounts);
+        var next10 = tierMultAfter(NOVA_SPEED_BASE, p.novaSpeedCounts, t10);
         var badge10 = '<span class="tier-badge '+TIER_CLASSES[t10]+'">'+TIER_NAMES[t10]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t10]);
         html = '<div class="upgrade-tag orb">新星速度</div><div class="upgrade-icon">💠</div>' +
           '<div class="upgrade-name">霜爆新星 · 速度 '+badge10+'</div>' +
-          '<div class="upgrade-desc">触发间隔 -'+Math.round(val10*100)+'% → 总 <b>-'+Math.round((cur10+val10)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">触发间隔 -'+Math.round(val10*100)+'% → 总 <b>×'+(1/next10).toFixed(2)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'weapon_new'){
@@ -3242,26 +3249,26 @@ function renderChoices(){
         var w3 = choice.data;
         var t3 = choice.tier;
         var newVal = tierValue(BASE_IND_POWER, t3);
-        var cur3 = sumTierCounts(BASE_IND_POWER, p.weaponMods[choice.wid].powerCounts);
+        var next3 = tierMultAfter(BASE_IND_POWER, p.weaponMods[choice.wid].powerCounts, t3);
         var badgeP = '<span class="tier-badge '+TIER_CLASSES[t3]+'">'+TIER_NAMES[t3]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t3]);
         html = '<div class="upgrade-tag power">独立力量</div>' +
           '<div class="upgrade-icon">'+w3.icon+'</div>' +
           '<div class="upgrade-name">'+w3.name+' · 力量 '+badgeP+'</div>' +
-          '<div class="upgrade-desc">+'+Math.round(newVal*100)+'% → 总 <b>+'+Math.round((cur3+newVal)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">+'+Math.round(newVal*100)+'% → 总 <b>×'+next3.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'weapon_speed'){
         var w4 = choice.data;
         var t4 = choice.tier;
         var newValS = tierValue(BASE_IND_SPEED, t4);
-        var cur4 = sumTierCounts(BASE_IND_SPEED, p.weaponMods[choice.wid].speedCounts);
+        var next4 = tierMultAfter(BASE_IND_SPEED, p.weaponMods[choice.wid].speedCounts, t4);
         var badgeS = '<span class="tier-badge '+TIER_CLASSES[t4]+'">'+TIER_NAMES[t4]+'</span>';
         card.classList.add('tier-' + TIER_CLASSES[t4]);
         html = '<div class="upgrade-tag speed">独立速度</div>' +
           '<div class="upgrade-icon">'+w4.icon+'</div>' +
           '<div class="upgrade-name">'+w4.name+' · 速度 '+badgeS+'</div>' +
-          '<div class="upgrade-desc">+'+Math.round(newValS*100)+'% → 总 <b>+'+Math.round((cur4+newValS)*100)+'%</b></div>' +
+          '<div class="upgrade-desc">+'+Math.round(newValS*100)+'% → 总 <b>×'+next4.toFixed(1)+'</b></div>' +
           '<div class="upgrade-lv">无限叠加</div>';
       }
       else if (choice.type === 'weapon_exclusive'){
@@ -5686,7 +5693,6 @@ function bindUI(){
   }
   updateCtrlLabel();
   ctrlToggle.onclick = function(){
-    if (isTouchDevice && controlMode === 'keyboard') return;
     controlMode = (controlMode === 'mouse') ? 'keyboard' : 'mouse';
     updateCtrlLabel();
     joystick.active = false; joystick.dx = 0; joystick.dy = 0;
